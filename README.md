@@ -1,6 +1,6 @@
-# Next Shadcn Starter
+# 格言格语（fgclibrary）
 
-面向中文 Next.js 项目的轻量初始工程。
+格言格语项目网站。
 
 ## 内置能力
 
@@ -12,13 +12,9 @@
 - Node.js 版本约束
 - GitHub Actions 持续集成
 
-## 使用模板
-
-点击仓库页面的 **Use this template** 创建新仓库，然后执行：
+## 本地开发
 
 ```bash
-git clone <新仓库地址>
-cd <新项目目录>
 nvm use
 npm ci
 npm run dev
@@ -46,14 +42,5 @@ npx shadcn@latest add <component>
 ```
 
 组件会添加到 `components/ui`。该目录已从 Biome 的检查和格式化范围中排除，方便后续通过 CLI 更新。
-
-## 创建项目后
-
-- 修改 `package.json` 中的项目名称和版本。
-- 重写本 README，使其描述实际项目。
-- 设置 Metadata、favicon 和首页内容。
-- 按需调整主题颜色与字体。
-- 补充环境变量示例和部署配置。
-- 删除不需要的演示内容与依赖。
 
 Agent 协作约定见 [AGENTS.md](./AGENTS.md)。

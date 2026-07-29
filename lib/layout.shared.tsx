@@ -39,7 +39,7 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <>
           <LogoIcon className="size-6" />
-          <span className="font-medium">FGC Library 文档</span>
+          <span className="font-medium">格言格语文档</span>
         </>
       ),
       url: "/docs",
