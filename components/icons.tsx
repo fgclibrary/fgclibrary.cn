@@ -9,7 +9,7 @@ export function LogoIcon(props: SVGProps<SVGSVGElement>) {
       {...props}
     >
       <rect
-        className="fill-primary"
+        className="fill-chart-2"
         height="18"
         rx="4"
         ry="4"
