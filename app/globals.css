@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -121,6 +123,39 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+:root,
+.dark,
+.dark #nd-sidebar {
+  --color-fd-background: var(--background);
+  --color-fd-foreground: var(--foreground);
+  --color-fd-card: var(--card);
+  --color-fd-card-foreground: var(--card-foreground);
+  --color-fd-popover: var(--popover);
+  --color-fd-popover-foreground: var(--popover-foreground);
+  --color-fd-primary: var(--primary);
+  --color-fd-primary-foreground: var(--primary-foreground);
+  --color-fd-secondary: var(--secondary);
+  --color-fd-secondary-foreground: var(--secondary-foreground);
+  --color-fd-muted: var(--muted);
+  --color-fd-muted-foreground: var(--muted-foreground);
+  --color-fd-accent: var(--accent);
+  --color-fd-accent-foreground: var(--accent-foreground);
+  --color-fd-border: var(--border);
+  --color-fd-ring: var(--ring);
+  --color-fd-overlay: color-mix(in oklab, var(--foreground) 20%, transparent);
+}
+
+.dark,
+.dark #nd-sidebar {
+  --color-fd-primary: var(--chart-1);
+  --color-fd-primary-foreground: var(--background);
+  --color-fd-muted-foreground: color-mix(
+    in oklab,
+    var(--foreground) 78%,
+    var(--background)
+  );
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -135,4 +170,15 @@
   html {
     @apply font-sans;
   }
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html > body[data-scroll-locked] {
+  /* biome-ignore lint/complexity/noImportantStyles: Override Base UI's inline scroll-lock compensation. */
+  margin-right: 0 !important;
+  /* biome-ignore lint/complexity/noImportantStyles: Override Base UI's inline scroll-lock compensation. */
+  --removed-body-scroll-bar-size: 0px !important;
 }

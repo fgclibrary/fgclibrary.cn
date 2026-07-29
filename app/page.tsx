@@ -1,4 +1,6 @@
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
+
+import { buttonVariants } from "@/components/ui/button"
 
 export default function Page() {
   return (
@@ -7,8 +9,12 @@ export default function Page() {
         <div>
           <h1 className="font-medium">项目已就绪！</h1>
           <p>现在可以添加组件并开始构建。</p>
-          <p>项目已预先添加按钮组件。</p>
-          <Button className="mt-2">按钮</Button>
+          <p>Fumadocs 文档系统已接入。</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link href="/docs" className={buttonVariants()}>
+              浏览项目文档
+            </Link>
+          </div>
         </div>
       </div>
     </div>
