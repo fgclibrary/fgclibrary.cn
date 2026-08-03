@@ -1,0 +1,7 @@
+{
+  "title": "产品集成",
+  "description": "活字格与其他产品和系统的集成方式",
+  "icon": "Unplug",
+  "root": true,
+  "pages": ["index", "spreadjs"]
+}

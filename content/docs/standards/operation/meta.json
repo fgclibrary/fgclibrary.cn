@@ -1,0 +1,5 @@
+{
+  "title": "运维",
+  "icon": "Wrench",
+  "pages": ["index", "data", "service", "system"]
+}

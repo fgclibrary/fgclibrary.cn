@@ -1,0 +1,179 @@
+---
+title: 引入 SpreadJS
+description: 让活字格应用拥有标准 Excel 使用体验
+---
+
+活字格设计器程序中已经内置了一个指定版本的 SpreadJS 依赖，这个依赖会将它的核心 API 统一封装并挂载在浏览器窗口的全局对象 `GC` 下。
+
+当活字格应用中引入了新的 SpreadJS 依赖, 由于 SpreadJS 默认会使用全局名称 `GC`，这会导致较为严重的**全局对象冲突**问题：
+
+- **版本不兼容**：活字格的内置SpreadJS 逻辑与自定义引入的 SpreadJS 逻辑同时存在，它们会争夺 `GC` 这个唯一入口。
+- **API 冲突/覆盖**：两个版本的API 会互相覆盖或干扰，导致不可预期的行为。
+
+为了确保我们自定义 SpreadJS 逻辑能够独立稳定运行，需要通过以下步骤实现依赖隔离：
+
+- **重新定义命名空间**：将自定义的SpreadJS 依赖的全局对象名称从 `GC` 修改为一个全新且唯一的新名称（例如 `MYGC`）；
+- **重新打包**：将SpreadJS 资源重新打包，确保所有需要的组件都在新的类库中；
+
+通过这种强制重命名和隔离，可以彻底避免与活字格内置环境产生任何 API 冲突。
+
+## 先决条件
+
+在继续之前，请确保：
+
+- Node.js 22.12+;
+- 了解基础的 Node.js 项目构建流程。
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+<Steps>
+<Step>
+
+### 创建构建工程
+
+<Callout>
+可以访问 [Gitee 仓库](https://gitee.com/low-code-dev-lab/fgc-spread-lib) 直接获取示例构建工程。
+</Callout>
+
+使用 `Vite` 创建一个新的项目工程：
+
+```bash
+npm create vite@latest
+```
+</Step>
+
+<Step>
+
+### 按需安装 SpreadJS 依赖：
+
+```json title="package.json"
+"dependencies": {
+  "@grapecity-software/spread-sheets": "^18.2.5",
+  "@grapecity-software/spread-sheets-ai-addon": "^18.2.5",
+  "@grapecity-software/spread-sheets-barcode": "^18.2.5",
+  "@grapecity-software/spread-sheets-charts": "^18.2.5",
+  "@grapecity-software/spread-sheets-datacharts-addon": "^18.2.5",
+  "@grapecity-software/spread-sheets-designer": "^18.2.5",
+  "@grapecity-software/spread-sheets-designer-resources-cn": "^18.2.5",
+  "@grapecity-software/spread-sheets-formula-panel": "^18.2.5",
+  "@grapecity-software/spread-sheets-ganttsheet": "^18.2.5",
+  "@grapecity-software/spread-sheets-io": "^18.2.5",
+  "@grapecity-software/spread-sheets-languagepackages": "^18.2.5",
+  "@grapecity-software/spread-sheets-pdf": "^18.2.5",
+  "@grapecity-software/spread-sheets-pivot-addon": "^18.2.5",
+  "@grapecity-software/spread-sheets-print": "^18.2.5",
+  "@grapecity-software/spread-sheets-reportsheet-addon": "^18.2.5",
+  "@grapecity-software/spread-sheets-resources-zh": "^18.2.5",
+  "@grapecity-software/spread-sheets-shapes": "^18.2.5",
+  "@grapecity-software/spread-sheets-slicers": "^18.2.5",
+  "@grapecity-software/spread-sheets-tablesheet": "^18.2.5"
+}
+```
+</Step>
+
+<Step>
+
+### 配置全局对象 `MYGC`
+
+在 `main.js` 中引入相关依赖后，创建全新的全局对象 `MYGC` 并将其挂载到 `window` 上：
+
+```js title="main.js"
+import '@grapecity-software/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
+import '@grapecity-software/spread-sheets-designer/styles/gc.spread.sheets.designer.min.css'
+import GC from '@grapecity-software/spread-sheets'
+import '@grapecity-software/spread-sheets-shapes'
+import '@grapecity-software/spread-sheets-charts'
+import '@grapecity-software/spread-sheets-slicers'
+import '@grapecity-software/spread-sheets-print'
+import '@grapecity-software/spread-sheets-barcode'
+import '@grapecity-software/spread-sheets-pdf'
+import '@grapecity-software/spread-sheets-pivot-addon'
+import '@grapecity-software/spread-sheets-tablesheet'
+import '@grapecity-software/spread-sheets-ganttsheet'
+import '@grapecity-software/spread-sheets-formula-panel'
+import '@grapecity-software/spread-sheets-reportsheet-addon'
+import '@grapecity-software/spread-sheets-datacharts-addon'
+import '@grapecity-software/spread-sheets-ai-addon'
+import '@grapecity-software/spread-sheets-io'
+import '@grapecity-software/spread-sheets-resources-zh'
+import '@grapecity-software/spread-sheets-designer-resources-cn'
+import '@grapecity-software/spread-sheets-designer'
+
+//GC.Spread.Sheets.LicenseKey = "你的正式或试用 key";
+
+GC.Spread.Common.CultureManager.culture('zh-cn')
+
+window.MYGC = GC;
+```
+</Step>
+
+<Step>
+
+### 打包工程
+
+```bash
+npm run build
+```
+
+打包完成后，您可以在 `dist` 目录下找到编译后的文件。
+
+<Callout>
+  打包后的文件名称可以通过配置 `vite.config.js` 来指定。
+
+  ```js
+const baseName = 'fgc-spread-lib'
+export default defineConfig({
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: `${baseName}.js`,
+        chunkFileNames: '[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.names && assetInfo.names.length && assetInfo.names[0].endsWith('.css')) {
+            return `${baseName}[extname]`
+          }
+          return 'assets/[name]-[hash][extname]'
+        }
+      }
+    }
+  }
+})
+  ```
+</Callout>
+
+</Step>
+
+<Step>
+
+### 完成
+
+您可以将打包好的 `fgc-spread-lib.js` 和 `fgc-spread-lib.css` 引入您的活字格应用中。
+
+</Step>
+
+</Steps>
+
+### 快速开始
+
+在活字格设计器中，选择「设置」-> 「自定义 Javascript/CSS」, 引入打包后的 SpreadJS 相关依赖：
+
+- `fgc-spread-lib.js`：SpreadJS 核心类库，包含所有必要的 SpreadJS 组件和功能。
+- `fgc-spread-lib.css`：SpreadJS 库的样式文件，用于定制 SpreadJS  Designer 组件的外观。
+
+![fgc-import-spread.png](/images/fgc-import-spread.png)
+
+全新的 `MYGC` 对象现在已经挂载到 `window` 上，您可以在应用中直接使用它来创建 SpreadJS 实例：
+
+```js title="JavaScript 命令"
+const spreadDom = document.querySelectorAll('.spreadCell')
+if(spreadDom.length > 0) {
+    spreadDom[0].innerHTML= ""
+    let designer = new MYGC.Spread.Sheets.Designer.Designer(spreadDom[0]);
+}
+```
+
+您可以在活字格应用中使用任意的 SpreadJS API ，而不会影响活字格本体的功能。
+
+<Callout>
+可以访问 [葡萄城市场](https://marketplace.grapecity.com.cn/ApplicationDetails?productID=SP2405110001&productDetailID=D2512040001&tabName=Tabs_detail) 查看示例实践工程。
+</Callout>

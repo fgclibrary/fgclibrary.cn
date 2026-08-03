@@ -1,0 +1,16 @@
+{
+  "title": "开发",
+  "icon": "Code",
+  "pages": [
+    "index",
+    "principle",
+    "cooperation",
+    "expansion",
+    "---基础---",
+    "base",
+    "---数据库---",
+    "database",
+    "---配置---",
+    "configuration"
+  ]
+}

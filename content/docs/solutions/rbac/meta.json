@@ -1,0 +1,17 @@
+{
+  "title": "RBAC",
+  "icon": "Shield",
+  "description": "活字格标准化权限管理框架",
+  "pages": [
+    "index",
+    "quick-start",
+    "api",
+    "---数据---",
+    "views",
+    "auxiliary-table",
+    "---设计---",
+    "access-control-models",
+    "standard",
+    "event-driven"
+  ]
+}

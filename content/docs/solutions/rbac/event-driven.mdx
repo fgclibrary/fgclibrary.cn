@@ -1,0 +1,98 @@
+---
+title: 事件驱动
+description: 借助事件统一管控数据与视图的呈现。
+---
+
+活字格提供事件驱动机制，帮助开发者统一管控数据与视图的呈现。框架遵循以下原则：
+
+1. **事件驱动**：所有数据与视图的交互均通过事件触发。
+2. **事件分发**：事件根据类型进行分发，对应的事件处理函数被调用。
+3. **事件处理**：事件处理函数负责处理事件，完成数据与视图的更新。
+
+配置思路如下：
+
+- 页面共享逻辑统一维护在「页面命令」中，通过「调用页面命令」触发。逻辑中需要用到的参数，统一维护在「页面属性」中。
+- 组件共享逻辑统一维护在「组件命令」中，通过「调用组件命令」触发。逻辑中需要用到的参数，统一维护在「组件属性」中。
+
+下面通过角色管理模块来说明事件驱动下的数据流转机制。
+
+在活字格的角色模型中，有一个核心概念：[角色唯一标识](./views#角色唯一标识)。为确保角色数据的唯一性，角色唯一标识作为唯一标识符参与整个数据流转过程。在设计中，统一使用 `key` 作为后缀进行命名。
+
+## 数据的初始化
+
+`roleMembership`（角色成员管理）页面是角色管理的主入口，承担角色数据流转的核心职责。该页面包含页面属性 `defaultSelected`，用于存储页面初始化时需要展示的角色唯一标识。该值在「页面加载时命令」中被初始化。
+
+## 数据的动态切换
+
+`roleMembership` 页面提供了角色树，用户可以通过点击角色树中的节点来手动切换角色。此时需要解决两个问题：
+
+1. 角色切换后，需要将数据更新为被选中的角色信息。
+2. 角色树包含「角色」和「角色分类」两种节点，需要体现不同的信息呈现方式。
+
+针对问题 1，仅需配置角色树的「选择命令」即可触发角色切换事件。
+
+针对问题 2，由于命令处理函数需要根据点击的节点类型进行不同处理，因此模块引入「组件」来分别呈现不同类型的信息：
+
+- `role-info`：展示角色信息。
+- `role-type-info`：展示角色分类信息。
+- `role-group-info`：展示角色权限组信息。
+- `org-info`：展示组织节点信息。
+
+<Callout>
+「选择命令」与「拖拽命令」的详细逻辑可直接参考工程中的实现。
+</Callout>
+
+真正触发组件内部数据更新的关键，在于「操作单元格命令」中设置组件时传入的参数 `uniqueRoleKey`（角色唯一标识）。下面以 `role-info` 组件为例，说明事件驱动下的数据更新机制。
+
+## 数据的局部更新
+
+`role-info` 组件包含如下属性和事件：
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import {SquareTerminal,SlidersHorizontal} from 'lucide-react'
+
+<Files>
+  <Folder name="role-info" defaultOpen >
+    <File name="roleId" icon={<SlidersHorizontal />} />
+    <File name="uniqueRoleKey" icon={<SlidersHorizontal />} />
+    <File name="loadRoleData" icon={<SquareTerminal />} />
+    <File name="loadMemberData" icon={<SquareTerminal />} />
+    <File name="loadOrgData" icon={<SquareTerminal />} />
+    <File name="loadDefaultData" icon={<SquareTerminal />} />
+  </Folder>
+</Files>
+
+`role-info` 组件内部包含三部分数据：
+
+- 角色基本信息
+- 角色成员信息
+- 组织节点信息
+
+这三部分均存在单独修改的场景，因此需要分别提供对应的刷新事件：`loadRoleData`、`loadMemberData` 和 `loadOrgData`。
+
+对于角色模型来说，自定义的「角色唯一标识」用于区分角色分类和角色。但在 `role-info` 组件内部，角色类型已经确定，因此可以直接使用 `roleId` 来唯一标识角色。组件的设计如下：外部通过 `uniqueRoleKey` 接收唯一标识，内部再将其映射为 `roleId`，从而触发数据刷新。因此，组件的「属性值变更命令」中仅需调用 `loadRoleData` 事件即可。
+
+<Callout>
+ `org-info` 组件将唯一标识 `orgId` 直接对外暴露，因此组件初始化后会自动刷新。但后续不会再有变更，所以需要在「属性值变更命令」中单独维护要刷新的数据加载方法。
+</Callout>
+
+## 数据的删除
+
+数据删除是敏感操作，需要特别注意的是：执行硬删除后，数据的 id 会随之清空，因此需要在删除成功后为页面/组件提供一个兜底数据，避免出现页面为空的异常情况。
+
+<Callout>
+ 硬删除指直接删除数据库中的数据，而非将数据标记为删除状态（软删除/逻辑删除）。基于活字格机制，框架仅支持硬删除。
+</Callout>
+
+对于 `role-info` 组件，当删除角色（`dangerClick` 事件）成功后，需要调用 `loadDefaultData` 事件来刷新默认选中的角色。框架默认选取第一个角色 `administrator`（该角色为默认超级管理员角色，不允许删除）作为默认选中角色。
+
+请留意，只有**属性值发生变更时**才会触发「属性值变更命令」进而加载数据。当连续删除多个角色时，默认值将始终为 `administrator` 的唯一标识，导致变更命令不会被触发。因此在设置默认值时，需要使用关键字 `reset` 与 `administrator` 的唯一标识进行反复赋值，确保变更命令每次均能够被触发。该逻辑维护在 `roleMembership` 页面的「属性值变更命令」中。
+
+
+```formula title="loadDefaultData"
+=IF(isSet="reset",defaultRoleData.uniqueKey,"reset")
+```
+
+<Callout>
+ 组织节点支持将所有节点删除，因此在最后一个节点删除后，需要提供兜底组件 `org-empty`（通过关键字 `empty` 来判断），用于展示组织节点为空的情况。
+</Callout>

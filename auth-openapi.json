@@ -1,0 +1,163 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FGC-RBAC Auth",
+    "description": "FGC-RBAC 身份认证服务接口文档",
+    "version": "1.0.0"
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "x-displayName": "身份认证"
+    }
+  ],
+  "paths": {
+    "/UserService/connect/token": {
+      "post": {
+        "summary": "获取访问令牌",
+        "deprecated": false,
+        "description": "通过客户端凭证模式（Client Credentials）、密码模式（Resource Owner Password Credentials）或刷新令牌（Refresh Token）获取访问令牌。仅密码模式且 scope 包含 offline_access 时支持刷新令牌。",
+        "tags": ["auth"],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "description": "客户端标识符，在活字格服务器管理控制台中获取",
+                    "example": "",
+                    "type": "string",
+                    "title": "客户端标识符"
+                  },
+                  "client_secret": {
+                    "description": "客户端密钥，在活字格服务器管理控制台中获取",
+                    "example": "",
+                    "type": "string",
+                    "title": "客户端密钥"
+                  },
+                  "grant_type": {
+                    "type": "string",
+                    "enum": ["client_credentials", "password", "refresh_token"],
+                    "description": "授权方式：client_credentials（客户端凭证）、password（密码模式）、refresh_token（刷新令牌）",
+                    "example": "client_credentials",
+                    "title": "授权方式"
+                  },
+                  "scope": {
+                    "description": "令牌作用域，多个作用域用空格进行分隔，以服务端第三方授权设置的值为准。当需要刷新令牌（仅限密码模式）时，需为此字段添加关键字 offline_access。",
+                    "example": "",
+                    "type": "string",
+                    "title": "令牌作用域"
+                  },
+                  "refresh_token": {
+                    "description": "用于刷新令牌的令牌，通过首次获取令牌时得到",
+                    "example": "",
+                    "type": "string",
+                    "title": "刷新令牌"
+                  },
+                  "userName": {
+                    "description": "活字格服务的用户名，grant_type=password 时必需",
+                    "example": "",
+                    "type": "string",
+                    "title": "用户名"
+                  },
+                  "password": {
+                    "description": "用户名对应的登录密码，grant_type=password 时必需",
+                    "example": "",
+                    "type": "string",
+                    "title": "密码"
+                  }
+                },
+                "required": ["client_id", "client_secret", "grant_type"]
+              },
+              "examples": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回访问令牌信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "title": "访问令牌",
+                      "description": "用于访问受保护资源的 JWT 访问令牌"
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "title": "令牌生命周期",
+                      "description": "令牌有效时长，单位为秒"
+                    },
+                    "token_type": {
+                      "type": "string",
+                      "title": "令牌类型",
+                      "description": "令牌类型，固定为 Bearer"
+                    },
+                    "scope": {
+                      "type": "string",
+                      "title": "令牌作用域",
+                      "description": "令牌授权的作用域，与管理控制台配置一致"
+                    },
+                    "refresh_token": {
+                      "type": "string",
+                      "title": "刷新令牌",
+                      "description": "用于刷新访问令牌的令牌，仅 scope 包含 offline_access 时返回"
+                    }
+                  },
+                  "required": [
+                    "expires_in",
+                    "token_type",
+                    "scope",
+                    "access_token"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功示例",
+                    "value": {
+                      "access_token": "eyJhbGciOiJSUzI1NiIsImt...",
+                      "expires_in": 7200,
+                      "token_type": "Bearer",
+                      "scope": "FGC_AllAppsServerCommands FGC_UserAPIs"
+                    }
+                  },
+                  "2": {
+                    "summary": "带有刷新令牌的响应",
+                    "value": {
+                      "access_token": "eyJhbGciOiJSUzI1NiIsIm...",
+                      "expires_in": 7200,
+                      "token_type": "Bearer",
+                      "refresh_token": "0E554F9EE19548843610E7F0CC9E99...",
+                      "scope": "offline_access"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [],
+        "operationId": "GetAccessToken"
+      }
+    }
+  },
+  "webhooks": {},
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {}
+  },
+  "servers": [
+    {
+      "url": "https://hzg.orb.local",
+      "description": "本地服务器"
+    }
+  ],
+  "security": []
+}

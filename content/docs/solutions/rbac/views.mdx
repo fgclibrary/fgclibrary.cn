@@ -1,0 +1,63 @@
+---
+title: 内建视图
+description: 活字格内建视图在权限管理框架中的使用说明。
+---
+
+权限管理框架需要使用全部内建视图，并对其进行适当调整以满足功能需求。
+
+import { Callout } from 'fumadocs-ui/components/callout'
+
+<Callout>
+  活字格提供了一套内建视图，用于用户与权限的管控。您可以在「创建」页签下的「视图」中一键添加所有内建视图。详细说明请参阅 [官方帮助手册](https://www.grapecity.com.cn/solutions/huozige/help/docs/establishusersrolesandorganizationalstructure/usermanagementview#mobileMenu)。
+</Callout>
+
+## 视图分组
+
+按功能场景，内建视图可分为三组：
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+import {TableIcon} from 'lucide-react'
+
+<Files>
+  <Folder name="用户信息视图" defaultOpen>
+    <File name="用户信息视图" icon={<TableIcon />} />
+  </Folder>
+  <Folder name="角色信息视图" defaultOpen>
+    <File name="角色信息视图" icon={<TableIcon />} />
+    <File name="角色分类关系视图" icon={<TableIcon />} />
+    <File name="用户角色关系视图" icon={<TableIcon />} />
+    <File name="角色组织关系视图" icon={<TableIcon />} />
+    <File name="角色拥有权限视图" icon={<TableIcon />} />
+  </Folder>
+  <Folder name="组织信息视图" defaultOpen>
+    <File name="组织信息视图" icon={<TableIcon />} />
+    <File name="用户组织关系视图" icon={<TableIcon />} />
+    <File name="组织级别视图" icon={<TableIcon />} />
+  </Folder>
+</Files>
+
+## 自定义公式字段
+
+### 角色唯一标识
+
+在活字格的开发流程中，每位开发者的设计器都是相对独立的开发环境，因此在设计器中定义的角色或组织结构所生成的 `ID` 仅在当前设计器环境中唯一。
+
+<Callout>
+  在活字格的服务器环境中，角色名称与组织路径才是判断设计器推送的角色、组织结构是否已存在的唯一标识。
+</Callout>
+
+此外，`角色分类关系视图` 中会存在多条具有相同 `ID` 的记录 —— 这是因为角色分类也作为角色的一部分被纳入该视图。
+
+为区分角色与角色分类，确保能通过唯一标识精确定位目标对象，需要人为定义一个 **角色唯一标识** 作为该视图的唯一键。具体做法是将视图中的 `Id` 与 `是否角色` 两个字段以特殊符号 `~` 拼接，该公式字段的值即为角色唯一标识。同时，为维护分类的层级结构，还需同步维护父角色的唯一标识。
+
+<img src="/images/role-unique-key.png" alt="角色唯一标识的配置页" className="mx-auto block w-1/2" />
+
+### 图标
+
+角色与组织结构在页面上通常以树形结构呈现，为使展示更加美观，需要为各节点配置图标。框架通过[辅助表](./auxiliary-table)分别维护角色节点与组织节点的图标，公式字段的值须与辅助表中对应的图标 ID 严格匹配。辅助表中的图标以附件形式维护，可通过框架中的 `元数据管理 - 图标管理` 进行管理。
+
+![图标管理](/images/icon-config.png)
+
+<Callout>
+  下载框架工程文件后，默认图标会自动存放在工程目录下以 `_fgcfiles` 为后缀的文件夹中。
+</Callout>

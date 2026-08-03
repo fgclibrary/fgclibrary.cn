@@ -1,0 +1,97 @@
+---
+title: 环境依赖
+description: 在不同环境下的依赖调整
+---
+
+## 非 Windows 环境
+
+官方文档与默认的项目创建工具默认支持 Windows 环境。如果您有非 Windows 环境下开发 Java 插件的需求，需要进行一些额外的配置。
+
+### 项目模板
+
+活字格为非 Windows 环境提供了 Java 插件项目模板，您可以从 [Gitee 仓库](https://gitee.com/GrapeCity/forguncy-java-plugin-project-creator/releases/tag/1.0.0) 中获取该模板。
+
+<Callout>
+项目模板仅可通过下载 `.zip` 包的方式获取。
+</Callout>
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files';
+
+<Files>
+  <Folder name="forguncyJavaExtensionGenerateTool" defaultOpen>
+    <Folder name="command-plugin-template(服务端命令插件模板)" disabled/>
+    <Folder name="security-provider-template(安全提供程序模板)" disabled/>
+    <Folder name="web-api-template(Web API模板)" disabled/>
+    <Folder name="packageTools(打包工具依赖)" disabled/>
+  </Folder>
+</Files>
+
+### Maven 配置
+
+项目模板的打包依赖于 Maven。您需要根据您的环境，修改 `pom.xml` 文件中的相关配置。
+
+#### 基础属性配置
+
+```xml title="pom.xml"
+<properties>
+  <forguncy.path.dependency>PLUGIN_ABS_PATH</forguncy.path.dependency>
+  <forguncy.path.jre>JAVA_PATH</forguncy.path.jre>
+</properties>
+```
+
+- `PLUGIN_ABS_PATH`：开发环境中活字格插件 SDK 根目录的绝对路径。
+  <Callout>
+  活字格插件 SDK 存放在 `{活字格设计器安装目录}/WebSite/javaAdapterServerBin` 目录下，您可以将该目录下的所有文件复制到 `PLUGIN_ABS_PATH` 目录中。
+  </Callout>
+- `JAVA_PATH`：开发环境中 JRE 根目录的绝对路径。
+
+#### 构建配置
+
+模板构建时默认执行 `java.exe` 命令。在非 Windows 环境下，需要将其替换为您系统中的 java 命令。
+
+此外，如果您变更了 `packageTools` 目录下依赖包的位置，也需要相应调整。
+
+```xml title="pom.xml"
+...
+  <configuration>
+    <!-- 修改为当前环境使用的 java 命令 -->
+    <executable>${forguncy.path.jre}/jre/bin/java.exe</executable> // [!code highlight]
+    <arguments>
+      <argument>-jar</argument>
+      <!-- 修改为当前环境使用的 packageZip_jwd.jar 路径 -->
+      <argument>../packageTools/packageZip_jwd.jar</argument> // [!code highlight]
+      <argument>${pom.basedir}</argument>
+      <argument>plugin</argument>
+    </arguments>
+  </configuration>
+  ...
+  <configuration>
+    <!-- 修改为当前环境使用的 java 命令 -->
+    <executable>${forguncy.path.jre}/jre/bin/java.exe</executable> // [!code highlight]
+    <arguments>
+      <argument>-jar</argument>
+      <!-- 修改为当前环境使用的 autoInstall_jwd.jar 路径 -->
+      <argument>../packageTools/autoInstall_jwd.jar</argument> // [!code highlight]
+      <argument>${pom.basedir}</argument>
+    </arguments>
+  </configuration>
+...
+```
+
+## JRE
+
+Java 插件编译后，将直接运行在活字格服务器内置的 JRE 环境中。为了避免编译时错误与运行时错误，开发环境必须与运行环境严格保持一致。
+
+- 当前活字格版本基准：JDK 21
+- 请务必确保您的开发环境（JDK）与活字格内置版本完全匹配。
+
+<Callout title="如何核实内置版本？">
+如果您需要确认当前服务器具体的 JRE 版本号，可以查看服务器安装目录下的说明文件： `{活字格服务器安装目录}/WebSite/bpmJavaServerBin/jre/NOTICE`。
+</Callout>
+
+## IDE 开发配置
+
+在配置集成开发环境（如 IntelliJ IDEA 或 Eclipse）时，请检查以下两项设置，确保它们均指向 JDK 21：
+
+- **项目 SDK（Project SDK）**：选择 JDK 21。
+- **语言级别（Language Level）**：设置为对应 JDK 21 的特性支持。

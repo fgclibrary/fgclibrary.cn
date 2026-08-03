@@ -1,0 +1,5 @@
+{
+  "title": "架构",
+  "icon": "Server",
+  "pages": ["index", "sys-arch", "deployment", "life-cycle", "robustness"]
+}

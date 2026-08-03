@@ -1,0 +1,16 @@
+{
+  "title": "标准化",
+  "root": true,
+  "icon": "BookOpen",
+  "description": "活字格标准化最佳实践",
+  "pages": [
+    "index",
+    "idiom",
+    "---架构---",
+    "arch",
+    "---开发---",
+    "dev",
+    "---运维---",
+    "operation"
+  ]
+}

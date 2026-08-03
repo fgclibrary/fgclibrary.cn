@@ -1,0 +1,12 @@
+{
+  "title": "基础",
+  "icon": "FileCode",
+  "pages": [
+    "naming-style",
+    "business",
+    "component",
+    "docs",
+    "exception",
+    "page-design"
+  ]
+}

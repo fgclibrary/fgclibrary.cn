@@ -7,6 +7,7 @@ import { docsI18n } from "@/lib/layout.shared"
 import "./globals.css"
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://fgclibrary.cn"),
   applicationName: "格言格语",
   title: {
     default: "格言格语",

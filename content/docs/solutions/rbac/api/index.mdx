@@ -1,0 +1,191 @@
+---
+title: API 参考
+description: 权限管理框架的服务端命令文档。
+---
+
+本节包含权限管理框架所有对外 API 的详细说明，接口通过「服务端命令」提供对外服务，基于 OpenAPI 3.1 规范定义。接口均需通过 Bearer Token 进行身份认证，详见[鉴权认证](/docs/solutions/rbac/api/auth)。
+
+import { APICard } from '@/components/api-card';
+
+## 账户管理
+
+账户的增删改查、密码重置，以及角色与组织的分配。
+
+<Cards>
+  <APICard
+    href="/docs/solutions/rbac/api/account/GetAccountList"
+    title="获取账户列表"
+    description="分页查询账户列表，返回基本信息、角色及所属组织层级"
+    method="GET"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/account/AddAccount"
+    title="新增账户"
+    description="创建新账户，可指定姓名、邮箱、密码及所属组织"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/account/EditAccount"
+    title="编辑账户"
+    description="修改账户的姓名、邮箱、启用状态及所属组织"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/account/DeleteAccount"
+    title="删除账户"
+    description="删除指定账户，支持批量操作"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/account/ResetPassword"
+    title="重置账户密码"
+    description="重置指定账户的登录密码，支持批量操作"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/account/AssignRolesToUsers"
+    title="分配角色到用户"
+    description="为指定账户分配角色，支持批量操作"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/account/AssignOrgToUsers"
+    title="分配组织到用户"
+    description="为指定账户分配组织节点，支持批量操作"
+    method="POST"
+  />
+</Cards>
+
+## 角色管理
+
+角色的增删改查、分类管理、结构调整，以及成员与权限的分配。
+
+<Cards>
+  <APICard
+    href="/docs/solutions/rbac/api/role/GetRoleListByPage"
+    title="获取角色分页列表"
+    description="分页查询角色树节点的平铺数据"
+    method="GET"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/GetRoleList"
+    title="获取角色全量列表"
+    description="获取所有角色节点的全量数据，用于构建角色树"
+    method="GET"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/AddRole"
+    title="新增角色"
+    description="创建角色，可指定名称、所属分类及描述"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/EditRole"
+    title="编辑角色"
+    description="修改角色的名称、所属分类及描述"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/AddRoleType"
+    title="新增角色分类"
+    description="创建角色分类（文件夹节点），可指定父分类实现层级嵌套"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/EditRoleType"
+    title="编辑角色分类"
+    description="修改角色分类的名称及父级分类"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/DeleteRole"
+    title="删除角色或角色分类"
+    description="删除角色或分类，删除分类时其下所有子节点一并删除"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/ReorganizeRole"
+    title="调整角色结构"
+    description="调整角色树中的节点排序和所属分类"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/AddRoleMember"
+    title="添加角色成员"
+    description="为指定角色批量添加用户成员"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/RemoveMembersFromRole"
+    title="移除角色成员"
+    description="将指定用户从角色中移除，支持批量操作"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/AssignRoleToOrg"
+    title="绑定角色到组织"
+    description="将角色与组织节点进行绑定"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/role/CombineRoleGroup"
+    title="分配权限角色到角色"
+    description="为目标角色继承其他角色的权限"
+    method="POST"
+  />
+</Cards>
+
+## 组织管理
+
+组织节点的增删改查、结构调整，以及成员管理。
+
+<Cards>
+  <APICard
+    href="/docs/solutions/rbac/api/org/GetOrgListByPage"
+    title="获取组织分页列表"
+    description="分页查询组织节点列表"
+    method="GET"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/org/GetOrgList"
+    title="获取组织全量列表"
+    description="获取所有组织节点的全量数据，用于构建组织树"
+    method="GET"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/org/AddOrg"
+    title="新增组织"
+    description="创建组织节点，可指定名称、父级节点及组织级别"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/org/EditOrg"
+    title="编辑组织"
+    description="修改组织节点的名称、组织级别、描述及父级节点"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/org/DeleteOrgs"
+    title="删除组织"
+    description="删除指定的组织节点，支持批量操作"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/org/ReorganizeOrg"
+    title="调整组织层级"
+    description="调整组织树中的节点位置"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/org/AddOrgMembers"
+    title="添加组织成员"
+    description="为指定组织节点批量添加用户成员"
+    method="POST"
+  />
+  <APICard
+    href="/docs/solutions/rbac/api/org/RemoveMemberFormOrg"
+    title="移除组织成员"
+    description="从指定组织节点中移除用户成员，支持批量操作"
+    method="POST"
+  />
+</Cards>

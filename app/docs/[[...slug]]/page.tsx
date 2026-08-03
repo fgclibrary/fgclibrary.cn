@@ -8,7 +8,8 @@ import {
 import { createRelativeLink } from "fumadocs-ui/mdx"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getPageMarkdownUrl, source } from "@/lib/source"
+import { APIPage } from "@/components/api-page"
+import { getPageImage, getPageMarkdownUrl, source } from "@/lib/source"
 import { getMDXComponents } from "@/mdx-components"
 
 type DocsPageProps = {
@@ -21,6 +22,17 @@ export default async function Page({ params }: DocsPageProps) {
 
   if (!page) {
     notFound()
+  }
+
+  if (page.type === "openapi" || page.type === "auth-api") {
+    return (
+      <DocsPage full>
+        <h1 className="font-semibold text-[1.75em]">{page.data.title}</h1>
+        <DocsBody className="mb-16">
+          <APIPage {...page.data.getOpenAPIPageProps()} />
+        </DocsBody>
+      </DocsPage>
+    )
   }
 
   const MDX = page.data.body
@@ -63,5 +75,8 @@ export async function generateMetadata({
   return {
     title: page.data.title,
     description: page.data.description,
+    openGraph: {
+      images: getPageImage(page).url,
+    },
   }
 }

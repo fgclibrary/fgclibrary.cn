@@ -1,0 +1,25 @@
+---
+title: Java 支持
+description: 使用 Java 开发活字格插件
+---
+
+从 V10 版本开始，活字格正式支持使用 Java 语言开发服务端插件。
+
+这一能力的实现，得益于活字格内置的 JRE 环境（最初为支持工作流引擎而引入）。这意味着，您现在可以直接利用 Java 强大的生态系统来编写服务端的业务逻辑。
+
+<Callout title="开发须知">
+- Java 开发仅支持编写 **服务端** 逻辑。如果您需要开发前端 UI 相关的「单元格类型」插件，仍需使用 .NET 技术栈进行实现。
+- Java 插件直接运行于活字格内置的 JRE 之上。为了确保插件运行稳定，请务必确保您开发插件时使用的 JDK 版本与活字格内置的 JDK 版本保持一致。
+</Callout>
+
+## 先决条件
+
+在继续之前，请确保您已配置：
+
+- 和活字格 JRE 版本一致的 JDK。
+- Maven 构建工具。
+- 一款合适的 IDE（如 IntelliJ IDEA、Eclipse 等）。
+
+<Callout title="不是 Windows 环境？">
+如果您使用的开发系统是 Linux 或 macOS，请参考 [环境依赖](./java-dependence) 中的配置。
+</Callout>

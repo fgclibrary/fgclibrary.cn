@@ -1,0 +1,79 @@
+---
+title: 鉴权认证
+description: 如何通过 OAuth 2.0 认证调用活字格 API
+index: true
+---
+
+import { APICard } from '@/components/api-card';
+import { Callout } from 'fumadocs-ui/components/callout'
+
+第三方系统调用活字格 API 时，需通过 OAuth 2.0 获取访问令牌（Access Token）进行身份认证。
+
+## 配置客户端授权
+
+登录活字格服务器管理控制台，进入「设置 → 安全设置」页面，管理员可以为每个第三方应用配置客户端标识和密钥。
+
+![配置客户端授权](/images/config-client-auth.png)
+
+<Callout>
+  添加客户端授权的具体流程可以参考[官方文档](https://www.grapecity.com.cn/solutions/huozige/help/docs/serversetting/thirdpartyauthorization)。
+</Callout>
+
+## 获取访问令牌
+
+通过调用内置接口 `/UserService/connect/token` 获取访问令牌，支持以下授权模式：
+
+- **客户端凭证模式（Client Credentials）** — 用于机器到机器的认证，如服务到服务的调用。
+- **密码模式（Resource Owner Password Credentials）** — 用于用户到服务的认证，如用户登录后调用 API。
+
+<APICard
+  href="/docs/solutions/rbac/api/auth/GetAccessToken"
+  title="获取访问令牌"
+  description="通过客户端凭证模式或密码模式获取第三方授权的访问令牌"
+  method="POST"
+/>
+
+## 使用访问令牌
+
+获取到 `access_token` 后，在后续请求的 `Authorization` 头中携带令牌：
+
+```bash title="使用访问令牌调用 获取账户列表 接口"
+curl https://your-forguncy-site/rbac/ServerCommand/GetAccountList?page=1&pageSize=10 \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+未携带令牌或令牌无效时，接口将返回 `401 Unauthorized`。
+
+<Callout>
+  请妥善保管客户端密钥和访问令牌，如怀疑泄露请立即在管理控制台中重新生成。
+</Callout>
+
+## 刷新令牌
+
+<Callout>
+  刷新令牌仅在**密码模式**下可用，客户端凭证模式不支持刷新令牌。
+</Callout>
+
+令牌过期后，可以重新走一遍授权流程，也可以使用刷新令牌获取新的访问令牌，避免用户重复输入凭据。
+
+首次获取令牌时，在 `scope` 中添加关键字 `offline_access`：
+
+```bash title="获取访问令牌与刷新令牌"
+curl -X POST https://your-forguncy-site/UserService/connect/token \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET" \
+  -d "grant_type=password" \
+  -d "username=Administrator" \
+  -d "password=YOUR_PASSWORD" \
+  -d "scope=FGC_UserAPIs offline_access"
+```
+
+返回中将额外包含 `refresh_token` 字段。使用该值获取新的访问令牌：
+
+```bash title="刷新访问令牌"
+curl -X POST https://your-forguncy-site/UserService/connect/token \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET" \
+  -d "grant_type=refresh_token" \
+  -d "refresh_token=YOUR_REFRESH_TOKEN"
+```

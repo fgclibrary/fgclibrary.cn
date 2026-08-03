@@ -1,0 +1,7 @@
+{
+  "title": "能力地图",
+  "description": "活字格核心开发技能清单与学习路径",
+  "icon": "GraduationCap",
+  "root": true,
+  "pages": ["index", "---级别---", "l1", "l2", "l3", "l4"]
+}
