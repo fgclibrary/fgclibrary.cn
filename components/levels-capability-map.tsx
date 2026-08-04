@@ -3,11 +3,12 @@
 import { IconArrowRight, IconCheck } from "@tabler/icons-react"
 import { useState } from "react"
 
-import { cn } from "@/lib/utils"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export type CapabilityLevel = {
   level: string
   title: string
+  tabTitle?: string
   position: string
   focus: string
   skills: string
@@ -35,39 +36,33 @@ export function LevelsCapabilityMap({ levels }: { levels: CapabilityLevel[] }) {
         </p>
       </div>
 
-      <div className="mt-10">
-        <div className="overflow-x-auto pb-1">
-          <div
-            role="tablist"
-            aria-label="能力等级"
-            className="grid min-w-[44rem] grid-cols-4 gap-2"
-          >
-            {levels.map((item) => (
-              <button
-                key={item.level}
-                type="button"
-                role="tab"
-                aria-selected={active.level === item.level}
-                aria-controls={`level-panel-${item.level}`}
-                onClick={() => setActiveLevel(item.level)}
-                className={cn(
-                  "flex min-w-0 flex-col items-start gap-1 rounded-lg border border-border bg-background px-4 py-3 text-left text-foreground transition-colors hover:bg-muted/50",
-                  "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                  "aria-selected:border-primary aria-selected:bg-primary aria-selected:text-primary-foreground aria-selected:hover:bg-primary",
-                )}
-              >
-                <span className="font-mono text-xs tracking-[0.12em] opacity-75">
-                  {item.level}
-                </span>
-                <span className="text-sm font-medium">{item.title}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+      <Tabs
+        value={active.level}
+        onValueChange={(value) => {
+          if (typeof value === "string") setActiveLevel(value)
+        }}
+        className="mt-10"
+      >
+        <TabsList className="!h-auto grid w-full grid-cols-4">
+          {levels.map((item) => (
+            <TabsTrigger
+              key={item.level}
+              value={item.level}
+              aria-label={`${item.level} ${item.title}`}
+              className="h-auto min-h-8 whitespace-normal px-2 py-2 sm:px-3"
+            >
+              <span className="font-mono text-xs tracking-[0.12em]">
+                {item.level}
+              </span>
+              <span className="hidden sm:inline">
+                · {item.tabTitle ?? item.title}
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-        <div
-          id={`level-panel-${active.level}`}
-          role="tabpanel"
+        <TabsContent
+          value={active.level}
           aria-label={`${active.level} ${active.title}`}
           className="mt-6 grid gap-4 lg:grid-cols-[7fr_5fr]"
         >
@@ -156,8 +151,8 @@ export function LevelsCapabilityMap({ levels }: { levels: CapabilityLevel[] }) {
               ))}
             </div>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </section>
   )
 }

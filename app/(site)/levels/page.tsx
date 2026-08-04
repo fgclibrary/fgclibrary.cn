@@ -20,6 +20,7 @@ const levels: CapabilityLevel[] = [
   {
     level: "L1",
     title: "单表应用",
+    tabTitle: "单表",
     position: "入门级能力，完成单表数据的录入、展示与基础交互。",
     focus: "建立「设计页面 → 绑定数据 → 发布运行」的完整认知。",
     skills: "9 项核心技能，覆盖页面设计、数据表操作、基础命令与发布流程。",
@@ -47,6 +48,7 @@ const levels: CapabilityLevel[] = [
   {
     level: "L2",
     title: "数据填报与展示应用",
+    tabTitle: "数据填报",
     position: "进阶级能力，独立完成多表关联、查询展示和流程型应用。",
     focus: "打磨数据模型与查询性能，完成从“能用”到“能交付”的过渡。",
     skills: "12 项核心技能，覆盖关联查询、列表图表、工作流与报表。",
@@ -74,6 +76,7 @@ const levels: CapabilityLevel[] = [
   {
     level: "L3",
     title: "常规业务应用",
+    tabTitle: "常规业务",
     position: "业务开发能力，独立交付复杂逻辑的常规企业应用。",
     focus: "将业务逻辑下沉到服务端，建立前后端分离与工程化思维。",
     skills:
@@ -102,6 +105,7 @@ const levels: CapabilityLevel[] = [
   {
     level: "L4",
     title: "高可用 / 高性能核心业务应用",
+    tabTitle: "核心业务",
     position: "专家级能力，面向高可用、高性能核心业务场景。",
     focus: "围绕架构、性能、安全和运维，保障核心应用稳定运行。",
     skills: "12 项核心技能，覆盖大数据量、并发、缓存、集群、安全、监控与灾备。",
