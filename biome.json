@@ -27,6 +27,14 @@
       "trailingCommas": "all"
     }
   },
+  "overrides": [
+    {
+      "includes": ["app/typeset.css"],
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ],
   "css": {
     "parser": {
       "tailwindDirectives": true

@@ -3,6 +3,7 @@ import { i18nProvider, uiTranslations } from "fumadocs-ui/i18n"
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
 
 import { LogoIcon } from "@/components/icons"
+import { siteModules } from "@/lib/site-config"
 
 export const translations = defineTranslations().extend(uiTranslations()).add({
   "Back to Home(404 not found page)": "返回首页",
@@ -39,10 +40,15 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <>
           <LogoIcon className="size-6" />
-          <span className="font-medium">格言格语文档</span>
+          <span className="font-medium">格言格语</span>
         </>
       ),
-      url: "/docs",
+      url: "/",
     },
+    links: siteModules.map((module) => ({
+      text: module.shortTitle,
+      url: module.href,
+      active: "nested-url",
+    })),
   }
 }
