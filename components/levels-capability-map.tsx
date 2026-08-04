@@ -1,8 +1,13 @@
 "use client"
 
 import { IconArrowRight, IconCheck } from "@tabler/icons-react"
+import Link from "next/link"
 import { useState } from "react"
 
+import {
+  CapabilityFlow,
+  type CapabilityFlowDefinition,
+} from "@/components/capability-flow"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export type CapabilityLevel = {
@@ -11,9 +16,8 @@ export type CapabilityLevel = {
   tabTitle?: string
   position: string
   focus: string
-  skills: string
   skillItems: string[]
-  flow: string[]
+  flow: CapabilityFlowDefinition
   shapeDescription: string
   scenarios: { title: string; description: string }[]
   href: string
@@ -62,95 +66,90 @@ export function LevelsCapabilityMap({ levels }: { levels: CapabilityLevel[] }) {
         </TabsList>
 
         <TabsContent
+          key={active.level}
           value={active.level}
           aria-label={`${active.level} ${active.title}`}
-          className="mt-6 grid gap-4 lg:grid-cols-[7fr_5fr]"
+          className="mt-6"
         >
-          <article className="rounded-lg border bg-background p-6 sm:p-7">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Capability · 当前版图
-            </p>
-            <div className="mt-4">
-              <h3 className="text-2xl font-semibold tracking-tight">
-                {active.title}
-              </h3>
-            </div>
-
-            <div className="mt-7 grid gap-6 sm:grid-cols-2">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                  定位
+          <article className="overflow-hidden rounded-xl border bg-background">
+            <header className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                  {active.title}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+                  {active.position}
                 </p>
-                <p className="mt-2 text-sm leading-6">{active.position}</p>
               </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <Link
+                href={active.href}
+                className="group inline-flex w-fit shrink-0 items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80 hover:underline"
+              >
+                查看 {active.level} 文档
+                <IconArrowRight
+                  aria-hidden="true"
+                  className="size-4 transition-transform group-hover:translate-x-0.5"
+                />
+              </Link>
+            </header>
+
+            <div className="grid gap-8 border-t px-6 py-7 sm:px-8 sm:py-8 md:grid-cols-3">
+              <section>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-primary">
                   重点
                 </p>
-                <p className="mt-2 text-sm leading-6">{active.focus}</p>
-              </div>
-            </div>
+                <p className="mt-3 text-sm leading-6">{active.focus}</p>
+              </section>
 
-            <p className="mt-8 border-t pt-5 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              包含的技能 · {active.skills}
-            </p>
-            <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-              {active.skillItems.map((skill) => (
-                <li
-                  key={skill}
-                  className="flex items-start gap-2 text-sm leading-6"
-                >
-                  <IconCheck
-                    aria-hidden="true"
-                    className="mt-1 size-4 shrink-0 text-muted-foreground"
-                  />
-                  <span>{skill}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
+              <section>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-primary">
+                  关键能力
+                </p>
+                <ul className="mt-3 grid gap-3">
+                  {active.skillItems.map((skill) => (
+                    <li
+                      key={skill}
+                      className="flex items-start gap-2 text-sm leading-6"
+                    >
+                      <IconCheck
+                        aria-hidden="true"
+                        className="mt-1 size-4 shrink-0 text-muted-foreground"
+                      />
+                      <span>{skill}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
 
-          <article className="rounded-lg border bg-background p-6 sm:p-7">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              Application Shape · 应用形态
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-2">
-              {active.flow.map((step, index) => (
-                <div key={step} className="contents">
-                  <span className="rounded-full border bg-muted/40 px-3 py-1.5 text-sm">
-                    {step}
-                  </span>
-                  {index < active.flow.length - 1 && (
-                    <IconArrowRight
-                      aria-hidden="true"
-                      className="size-4 shrink-0 text-muted-foreground"
-                    />
-                  )}
+              <section>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-primary">
+                  典型应用场景
+                </p>
+                <div className="mt-3 flex flex-col gap-3">
+                  {active.scenarios.map((scenario) => (
+                    <div key={scenario.title}>
+                      <p className="text-sm font-medium tracking-tight">
+                        {scenario.title}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        {scenario.description}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </section>
             </div>
-            <p className="mt-8 border-t pt-5 text-sm leading-6 text-muted-foreground">
-              {active.shapeDescription}
-            </p>
-          </article>
 
-          <div className="rounded-lg border bg-background p-6 sm:p-7 lg:col-span-2">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              应用场景 · Scenarios
-            </p>
-            <div className="mt-5 grid gap-6 sm:grid-cols-2">
-              {active.scenarios.map((scenario) => (
-                <div key={scenario.title} className="group">
-                  <h3 className="text-lg font-semibold tracking-tight">
-                    {scenario.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {scenario.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+            <section className="border-t px-6 py-7 sm:px-8 sm:py-8">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-primary">
+                典型流程
+              </p>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                {active.shapeDescription}
+              </p>
+              <CapabilityFlow graph={active.flow} />
+            </section>
+          </article>
         </TabsContent>
       </Tabs>
     </section>
