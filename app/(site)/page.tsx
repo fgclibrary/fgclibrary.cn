@@ -83,7 +83,7 @@ export default function HomePage() {
           </p>
 
           <div className="mt-10 w-full">
-            <div className="grid gap-px border bg-border md:grid-cols-2">
+            <div className="grid gap-px overflow-hidden rounded-xl border bg-border md:grid-cols-2">
               <div className="md:row-span-2">
                 <ModuleCard featured module={siteModules[0]} />
               </div>

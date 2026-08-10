@@ -1,8 +1,8 @@
-import { IconArrowRight } from "@tabler/icons-react"
+import { IconArrowRight, IconCheck } from "@tabler/icons-react"
 import type { Metadata } from "next"
 import Link from "next/link"
 
-import { ModulePage } from "@/components/module-page"
+import { SiteAnnouncement } from "@/components/site-announcement"
 import { getSiteModule } from "@/lib/site-config"
 
 export const metadata: Metadata = {
@@ -12,49 +12,123 @@ export const metadata: Metadata = {
 
 const module = getSiteModule("solutions")
 
-const capabilities = [
-  "用户、角色与组织结构管理",
-  "权限组与角色继承模型",
-  "页面、组件和服务端命令",
-  "完整 API 与自定义前端支持",
+const solutions = [
+  {
+    title: "RBAC 权限框架",
+    description:
+      "将用户、角色、组织与权限能力封装为可复用模块，为新应用提供一套清晰、可靠的权限基础。",
+    capabilities: [
+      "用户、角色与组织结构管理",
+      "权限组与角色继承模型",
+      "页面、组件和服务端命令",
+      "完整 API 与自定义前端支持",
+    ],
+    primaryLink: {
+      href: "/docs/solutions/rbac/quick-start",
+      label: "快速开始",
+    },
+    secondaryLink: {
+      href: "/docs/solutions/rbac",
+      label: "了解框架设计",
+    },
+  },
 ]
 
 export default function SolutionsPage() {
   return (
-    <ModulePage module={module}>
-      <section className="grid gap-10 lg:grid-cols-12">
-        <div className="lg:col-span-5">
-          <h2 className="text-3xl font-semibold tracking-tight">
-            RBAC 权限框架
-          </h2>
-          <p className="mt-5 text-pretty leading-7 text-muted-foreground">
-            一套可以导入新应用的标准化权限管理工程，将活字格内置的用户、角色、组织和权限能力封装为可复用模块。
-          </p>
-          <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+    <main className="flex-1">
+      <section>
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+          <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
+            <SiteAnnouncement />
+            <h1 className="text-balance text-4xl font-semibold leading-[1.15] tracking-[-0.035em] sm:text-5xl">
+              活字格解决方案
+            </h1>
+            <p className="mt-7 max-w-2xl text-pretty text-lg leading-8 text-muted-foreground">
+              找到适合项目的成熟方案，把经过验证的业务能力直接带进活字格项目。
+            </p>
             <Link
-              href="/docs/solutions/rbac/quick-start"
-              className="group inline-flex items-center gap-2 font-medium text-primary"
+              href={module.docsHref}
+              className="group mt-8 inline-flex items-center gap-2 text-sm font-medium text-primary"
             >
-              快速开始
-              <IconArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-            <Link
-              href="/docs/solutions/rbac"
-              className="font-medium hover:underline"
-            >
-              了解框架设计
+              浏览解决方案文档
+              <IconArrowRight
+                aria-hidden="true"
+                className="size-4 transition-transform group-hover:translate-x-1"
+              />
             </Link>
           </div>
         </div>
+      </section>
 
-        <div className="border-t lg:col-span-6 lg:col-start-7">
-          {capabilities.map((capability) => (
-            <div key={capability} className="border-b py-4 text-sm">
-              {capability}
-            </div>
+      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
+        <div className="max-w-2xl">
+          <h2 className="text-balance text-2xl font-semibold tracking-tight">
+            选择适合项目的方案
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            将经过验证的业务能力带进项目，减少从零设计和重复实现。
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-6">
+          {solutions.map((solution) => (
+            <article
+              key={solution.title}
+              className="overflow-hidden rounded-xl border bg-background"
+            >
+              <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,0.75fr)] lg:gap-12">
+                <div>
+                  <h3 className="text-2xl font-semibold tracking-tight">
+                    {solution.title}
+                  </h3>
+                  <p className="mt-4 max-w-2xl text-pretty text-sm leading-7 text-muted-foreground sm:text-base">
+                    {solution.description}
+                  </p>
+                  <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm">
+                    <Link
+                      href={solution.primaryLink.href}
+                      className="group inline-flex items-center gap-2 font-medium text-primary"
+                    >
+                      {solution.primaryLink.label}
+                      <IconArrowRight
+                        aria-hidden="true"
+                        className="size-4 transition-transform group-hover:translate-x-1"
+                      />
+                    </Link>
+                    <Link
+                      href={solution.secondaryLink.href}
+                      className="font-medium hover:underline"
+                    >
+                      {solution.secondaryLink.label}
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="border-t pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+                  <p className="text-xs font-medium tracking-[0.14em] text-primary">
+                    包含能力
+                  </p>
+                  <ul className="mt-4 grid gap-3">
+                    {solution.capabilities.map((capability) => (
+                      <li
+                        key={capability}
+                        className="flex items-start gap-2 text-sm leading-6"
+                      >
+                        <IconCheck
+                          aria-hidden="true"
+                          className="mt-1 size-4 shrink-0 text-muted-foreground"
+                        />
+                        <span>{capability}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
       </section>
-    </ModulePage>
+    </main>
   )
 }
