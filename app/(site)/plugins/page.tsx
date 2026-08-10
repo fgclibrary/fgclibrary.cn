@@ -24,7 +24,7 @@ const plugins = [
       "插件编译、部署与运行时边界",
     ],
     links: [
-      { href: "/docs/plugins", label: "阅读开发说明", primary: true },
+      { href: "/docs/plugins/java", label: "阅读开发说明", primary: true },
       { href: "/docs/plugins/java-dependence", label: "配置环境依赖" },
     ],
   },

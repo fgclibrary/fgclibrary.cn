@@ -27,7 +27,7 @@ export const siteModules: SiteModule[] = [
     shortTitle: "能力地图",
     description: "定位当前能力阶段，找到从入门到企业级交付的下一步。",
     href: "/levels",
-    docsHref: "/docs/levels",
+    docsHref: "/docs/levels/l1",
     docsLabel: "查看 L1–L4 能力清单",
   },
   {
@@ -45,7 +45,7 @@ export const siteModules: SiteModule[] = [
     shortTitle: "标准化",
     description: "将架构、开发与运维经验沉淀为可执行的项目建议。",
     href: "/standards",
-    docsHref: "/docs/standards",
+    docsHref: "/docs/standards/arch",
     docsLabel: "阅读标准化最佳实践",
   },
   {
@@ -63,7 +63,7 @@ export const siteModules: SiteModule[] = [
     shortTitle: "插件与扩展",
     description: "使用 Java 等技术扩展活字格服务端业务能力。",
     href: "/plugins",
-    docsHref: "/docs/plugins",
+    docsHref: "/docs/plugins/java",
     docsLabel: "开始 Java 插件开发",
   },
 ]

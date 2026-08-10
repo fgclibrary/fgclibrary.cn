@@ -1,8 +1,10 @@
 import { docs } from "collections/server"
+import type { Folder, Item, Root } from "fumadocs-core/page-tree"
 import { type InferPageType, loader } from "fumadocs-core/source"
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons"
 import { openapiPlugin, openapiSource } from "fumadocs-openapi/server"
 import { openapi, tokenEndpoint } from "@/lib/openapi"
+import { siteModules } from "@/lib/site-config"
 
 export const source = loader(
   {
@@ -26,6 +28,86 @@ export const source = loader(
     plugins: [lucideIconsPlugin(), openapiPlugin()],
   },
 )
+
+type ModuleNavigation = {
+  tree: Root
+  moduleNode?: Folder
+  moduleName?: React.ReactNode
+  moduleUrl?: string
+  moduleLandingUrl?: string
+  unitFolders: Folder[]
+}
+
+export function getModuleNavigation(slug?: string[]): ModuleNavigation {
+  const tree = source.getPageTree()
+  const moduleSlug = slug?.[0]
+
+  if (!moduleSlug) {
+    return {
+      tree,
+      moduleNode: undefined,
+      moduleName: undefined,
+      moduleUrl: undefined,
+      moduleLandingUrl: undefined,
+      unitFolders: [],
+    }
+  }
+
+  const moduleNode = tree.children.find(
+    (node): node is Folder =>
+      node.type === "folder" &&
+      (node.$ref?.folder === moduleSlug ||
+        node.index?.url === `/docs/${moduleSlug}`),
+  )
+
+  if (!moduleNode) {
+    return {
+      tree,
+      moduleNode: undefined,
+      moduleName: undefined,
+      moduleUrl: undefined,
+      moduleLandingUrl: undefined,
+      unitFolders: [],
+    }
+  }
+
+  const moduleIndex: Item | undefined =
+    moduleNode.index ??
+    moduleNode.children.find(
+      (node): node is Item =>
+        node.type === "page" && node.url === `/docs/${moduleSlug}`,
+    )
+  const children = moduleNode.children.filter((node) => node !== moduleIndex)
+  const moduleName =
+    siteModules.find((module) => module.id === moduleSlug)?.shortTitle ??
+    moduleNode.name
+  const moduleLandingUrl = siteModules.find(
+    (module) => module.id === moduleSlug,
+  )?.href
+  const unitFolders = children.filter(
+    (node): node is Folder => node.type === "folder",
+  )
+  const promotedChildren = unitFolders.flatMap((folder) => [
+    ...(folder.index ? [folder.index] : []),
+    ...folder.children,
+  ])
+  const navigationChildren =
+    unitFolders.length > 0 ? promotedChildren : children
+
+  return {
+    tree: {
+      ...tree,
+      name: moduleName,
+      description: moduleNode.description,
+      children: navigationChildren,
+    },
+    moduleNode,
+    moduleName,
+    moduleUrl: moduleIndex?.url ?? `/docs/${moduleSlug}`,
+    moduleLandingUrl,
+    unitFolders,
+  }
+}
 
 export function getPageImage(page: InferPageType<typeof source>) {
   const segments = [...page.slugs, "image.png"]

@@ -2,7 +2,7 @@ import { defineTranslations } from "fumadocs-core/i18n"
 import { i18nProvider, uiTranslations } from "fumadocs-ui/i18n"
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
 
-import { LogoIcon } from "@/components/icons"
+import { DocsNavTitle } from "@/components/docs-nav-title"
 import { siteModules } from "@/lib/site-config"
 
 export const translations = defineTranslations().extend(uiTranslations()).add({
@@ -34,21 +34,31 @@ export const translations = defineTranslations().extend(uiTranslations()).add({
 
 export const docsI18n = i18nProvider(translations)
 
-export function baseOptions(): BaseLayoutProps {
+export function baseOptions({
+  includeLinks = true,
+  moduleName,
+  moduleUrl,
+}: {
+  includeLinks?: boolean
+  moduleName?: React.ReactNode
+  moduleUrl?: string
+} = {}): BaseLayoutProps {
   return {
     nav: {
-      title: (
-        <>
-          <LogoIcon className="size-6" />
-          <span className="font-medium">格言格语</span>
-        </>
-      ),
-      url: "/",
+      title: moduleName ?? null,
+      url: moduleUrl ?? "/",
     },
-    links: siteModules.map((module) => ({
-      text: module.shortTitle,
-      url: module.href,
-      active: "nested-url",
-    })),
+    slots: {
+      navTitle: DocsNavTitle,
+    },
+    ...(includeLinks
+      ? {
+          links: siteModules.map((module) => ({
+            text: module.shortTitle,
+            url: module.href,
+            active: "nested-url" as const,
+          })),
+        }
+      : {}),
   }
 }
