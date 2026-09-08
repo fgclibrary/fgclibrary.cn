@@ -16,8 +16,9 @@
 
 ```bash
 nvm use
-npm ci
-npm run dev
+corepack enable
+pnpm install
+pnpm run dev
 ```
 
 开发服务器默认运行在 [http://localhost:3000](http://localhost:3000)。
@@ -25,12 +26,12 @@ npm run dev
 ## 常用命令
 
 ```bash
-npm run dev          # 启动开发服务器
-npm run check        # 检查格式、代码质量和导入
-npm run check:write  # 自动修复 Biome 可处理的问题
-npm run typecheck    # 执行 TypeScript 类型检查
-npm run build        # 执行生产构建
-npm run start        # 启动生产服务器
+pnpm run dev          # 启动开发服务器
+pnpm run check        # 检查格式、代码质量和导入
+pnpm run check:write  # 自动修复 Biome 可处理的问题
+pnpm run typecheck    # 执行 TypeScript 类型检查
+pnpm run build        # 执行生产构建
+pnpm run start        # 启动生产服务器
 ```
 
 ## 添加 shadcn 组件
@@ -38,7 +39,7 @@ npm run start        # 启动生产服务器
 通过 shadcn CLI 添加组件：
 
 ```bash
-npx shadcn@latest add <component>
+pnpm dlx shadcn@latest add <component>
 ```
 
 组件会添加到 `components/ui`。该目录已从 Biome 的检查和格式化范围中排除，方便后续通过 CLI 更新。

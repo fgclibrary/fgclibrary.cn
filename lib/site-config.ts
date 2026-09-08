@@ -8,6 +8,17 @@ export type SiteModule = {
   docsLabel: string
 }
 
+export type SiteSolutionModule = {
+  id: "rbac" | "offline-form"
+  title: string
+  shortTitle: string
+  /** 文档侧边栏用于匹配的目录段，如 solutions/rbac */
+  docRoot: string
+  description: string
+  docsHref: string
+  docsLabel: string
+}
+
 export type SiteAnnouncementConfig = {
   enabled: boolean
   label: string
@@ -36,8 +47,8 @@ export const siteModules: SiteModule[] = [
     shortTitle: "解决方案",
     description: "把经过验证的应用能力直接带进新的活字格项目。",
     href: "/solutions",
-    docsHref: "/docs/solutions/rbac",
-    docsLabel: "进入 RBAC 权限框架",
+    docsHref: "/docs/solutions",
+    docsLabel: "浏览解决方案文档",
   },
   {
     id: "standards",
@@ -68,6 +79,30 @@ export const siteModules: SiteModule[] = [
   },
 ]
 
+/** 解决方案分组下的独立子模块，主导航与落地页共用 */
+export const solutionModules: SiteSolutionModule[] = [
+  {
+    id: "rbac",
+    title: "RBAC 权限框架",
+    shortTitle: "RBAC",
+    docRoot: "solutions/rbac",
+    description:
+      "将用户、角色、组织与权限能力封装为可复用模块，为新应用提供一套清晰、可靠的权限基础。",
+    docsHref: "/docs/solutions/rbac",
+    docsLabel: "浏览 RBAC 文档",
+  },
+  {
+    id: "offline-form",
+    title: "HAC 离线填报",
+    shortTitle: "离线填报",
+    docRoot: "solutions/offline-form",
+    description:
+      "让现场作业人员断网也能继续完成表单填报，恢复网络后把填报记录与附件安全回传到活字格。",
+    docsHref: "/docs/solutions/offline-form",
+    docsLabel: "浏览离线填报文档",
+  },
+]
+
 export function getSiteModule(id: SiteModule["id"]) {
   const module = siteModules.find((item) => item.id === id)
 
@@ -76,4 +111,9 @@ export function getSiteModule(id: SiteModule["id"]) {
   }
 
   return module
+}
+
+/** 根据文档路径首段（如 solutions/rbac）匹配解决方案子模块 */
+export function getSolutionModuleByDocRoot(docRoot: string) {
+  return solutionModules.find((module) => module.docRoot === docRoot)
 }

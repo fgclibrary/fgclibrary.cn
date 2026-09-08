@@ -1,0 +1,117 @@
+---
+title: 导出结果
+description: 理解上传命令返回的 ExportResult 结构，包括记录、字段值、附件写回和空值边界。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+import { ImagePlaceholder } from "@/components/image-placeholder"
+
+“上传离线表单”命令处理完设备记录和附件后，会把结果返回给活字格页面。这份结果就是 **ExportResult JSON**，也是服务端写表时的主要输入。
+
+## 导出方式与返回形态
+
+离线记录通过“上传离线表单”命令中的两个能力回传到活字格，不需要直接调用 JS 原生接口：
+
+- **单项目回传**：在设计器中使用“上传离线表单”命令并选择“导出离线表单数据”，填写 `项目编号`。插件完成导出与附件处理后，将结果返回给页面的“导出结果”参数，供后续服务端命令解析。
+- **批量回传**：使用同一命令并选择“批量导出离线表单数据”，不需要填写 `项目编号`。
+
+“项目编号”就是表单项目根字段 `patternId`。导出时若需要按项目区分结果，可在下载阶段记录 `patternId`，或在批量结果中读取外层项目对象。
+
+处理过程如下：
+
+1. 从设备读取指定离线项目的填报记录和本地附件。
+2. 将本地附件上传到活字格服务器临时目录。
+3. 将上传结果写回对应记录字段。
+4. 返回处理后的“导出结果”。
+
+<Callout type="warn">
+如果记录中包含图片或文件字段，插件会一并完成附件上传和结果写回。附件上传依赖隐藏的 `FileUploadLimit` 上传限制配置；未配置时，包含附件的导出可能失败并返回“请设置文件上传限制ID”。
+</Callout>
+
+### 单项目导出对象
+
+单项目导出的最终对象为：
+
+```json
+{
+  "records": [
+    {
+      "recordId": "record_20260907_0001",
+      "values": {
+        "PDA_Inspection_TaskNo": "TASK-20260907-001"
+      },
+      "status": "待上传",
+      "isRead": false,
+      "createdTime": "2026-09-07T09:30:00+08:00",
+      "updatedTime": "2026-09-07T09:35:12+08:00"
+    }
+  ]
+}
+```
+
+`records` 数组的每个元素是设备上的一条填报记录：
+
+| 字段 | 说明 |
+| --- | --- |
+| `recordId` | 记录唯一编号，附件也通过 `recordId` 定位该记录。 |
+| `values` | `field.itemId` 到填报值的映射。 |
+| `status` | 设备侧记录状态，示例中为 `待上传`、`已读` 等；接口不读取或修改。 |
+| `isRead` | 记录是否已被查看过。 |
+| `createdTime`、`updatedTime` | 创建与更新时间，通常为 ISO 8601 字符串。 |
+| 其它字段 | HAC 返回的其它元数据会被原样保留，接口不修改。 |
+
+### 批量导出对象
+
+批量回传时，“导出结果”返回**项目对象数组**，而不是包一层对象：
+
+```json
+[
+  { "projectId": "PDA_Inspection", "patternTitle": "PDA巡检离线表单", "records": [] }
+]
+```
+
+单项目导出对象不再包含顶层 `projectId` 或顶层 `signature`：单项目时，`projectId` 通过命令的 `项目编号` 参数传入；签名作为普通 `signatureItem` 字段保存在 `values` 中。批量导出时，`projectId` 与 `patternTitle` 才出现在外层项目对象中。
+
+## values 中的字段值
+
+`values` 的 key 是 `field.itemId`，而不是字段标题。附件上传后，字段值按下列规则写回：
+
+| 字段类型 | 导出结果示例 | 说明 |
+| --- | --- | --- |
+| `textItem` / `passwordItem` | `"TASK-20260907-001"` | 普通字符串；密码值不会脱敏。 |
+| `selectItem` / `radioItem` | `"north"` | 保存选项 `value`，不是 `label`。 |
+| `datePicker` | `"2026-09-07 09:30:00"` / `"2026-09-08"` | 按 `includeTime` 返回含时间或仅日期。 |
+| `timePicker` | `"09:30:15"` / `"17:00"` | 按 `includeSeconds` 返回含秒或不含秒。 |
+| `imageItem` / `fileItem` | `"TEMP_IMAGE_ID_0001|TEMP_IMAGE_ID_0002"` | 上传后写入服务器临时文件标识，多个附件用英文竖线 `|` 拼接。 |
+| 带元数据的普通附件 | `{ "value": "TEMP_IMAGE_ID_0003", "updateTime": 46372.6046875 }` | 只替换 `value`，保留 `updateTime` 及其它元数据。 |
+| `signatureItem` | `"[{\"userName\":\"张三\",\"fileName\":\"TEMP_SIGNATURE_ID_0001\",\"updateTime\":46372.6046875}]"` | 字段值是 JSON 字符串；上传后仅替换对应 `fileName`，保留 `userName` 与 `updateTime`。 |
+| `listItem` | JSON 字符串 | 接口不解析列表内部结构，保留 HAC 返回的原始值。 |
+| 其它基本值 | `6`、`true`、`null` | HAC 返回什么类型就保留什么类型，接口不转换。 |
+
+## 空值边界
+
+空值同样会被原样保留，写表时不要假设空值只有一种形态：
+
+- 无附件时，`imageItem`、`fileItem` 保持空字符串，不会补成 `[]` 或 `{}`。
+- 无签名的 `signatureItem` 返回 `"[]"`。
+- 无明细的 `listItem` 返回 `"[]"`。
+- 普通字段的空值可为空字符串、`0`、`false` 或 `null`，均不被接口改写。
+
+<ImagePlaceholder
+  title="服务端命令调试中的导出结果"
+  description="建议准备一张活字格设计器运行调试截图，展示“导出结果”变量的展开结构，包括 records 数组、values 字段和附件临时文件标识。"
+  note="调试输出较长时，可只保留一条记录并展开 values；如含文件名请使用测试数据。"
+/>
+
+## 附件定位与写回规则
+
+如果需要在服务端二次处理附件，请先理解导出结果中的附件标识是如何写回的：
+
+1. 记录编号优先取 `attachment.recordId`；不存在时取 `attachment.path[0]`。
+2. 字段编号优先取 `attachment.fieldId`；不存在时取 `attachment.path[1]`。
+3. 上传文件名优先级为 `originalName > fileName > localName > offlineAttachment`。
+4. 普通附件按 `recordId + fieldId` 聚合，同一字段的多个附件结果用 `|` 拼接。
+5. 当 `attachment.path[2]` 是非负整数，且原字段值中存在签名项 `userName`/`updateTime`，或附件自身存在 `updateTime` 时，该下标会被视为签名数组下标，只替换对应签名项的 `fileName`。
+6. 普通附件上传结果直接使用上传接口的 `responseText`，接口不解析该响应。
+
+处理结束后，`records`、`values` 以及未识别的其它属性都会原样保留，只有 `attachments` 被移除。

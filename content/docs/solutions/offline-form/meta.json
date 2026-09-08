@@ -1,0 +1,20 @@
+{
+  "title": "HAC 离线填报",
+  "icon": "Smartphone",
+  "description": "活字格与 HAC 协作完成离线表单填报与数据回传",
+  "pages": [
+    "index",
+    "---表单定义---",
+    "form-structure",
+    "field-types",
+    "---活字格命令---",
+    "build-form",
+    "download-form",
+    "upload-form",
+    "---数据回传---",
+    "export-result",
+    "server-parse",
+    "---页面示例---",
+    "page-flow"
+  ]
+}

@@ -3,7 +3,7 @@ import { i18nProvider, uiTranslations } from "fumadocs-ui/i18n"
 import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared"
 
 import { DocsNavTitle } from "@/components/docs-nav-title"
-import { siteModules } from "@/lib/site-config"
+import { siteModules, solutionModules } from "@/lib/site-config"
 
 export const translations = defineTranslations().extend(uiTranslations()).add({
   "Back to Home(404 not found page)": "返回首页",
@@ -53,11 +53,23 @@ export function baseOptions({
     },
     ...(includeLinks
       ? {
-          links: siteModules.map((module) => ({
-            text: module.shortTitle,
-            url: module.href,
-            active: "nested-url" as const,
-          })),
+          links: siteModules.map((module) =>
+            module.id === "solutions"
+              ? {
+                  type: "menu" as const,
+                  text: module.shortTitle,
+                  items: solutionModules.map((solution) => ({
+                    text: solution.shortTitle,
+                    url: solution.docsHref,
+                    active: "nested-url" as const,
+                  })),
+                }
+              : {
+                  text: module.shortTitle,
+                  url: module.href,
+                  active: "nested-url" as const,
+                },
+          ),
         }
       : {}),
   }

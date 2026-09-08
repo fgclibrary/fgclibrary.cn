@@ -1,0 +1,118 @@
+---
+title: 表单结构
+description: 认识 Pattern JSON 的根对象、步骤、页面节点和运行字段，为设计可下发的离线表单打好基础。
+---
+
+import { ImagePlaceholder } from "@/components/image-placeholder"
+
+离线表单并不是把活字格页面原样搬到设备上，而是把表单定义转换成一种双方约定的 JSON 结构，这份结构称为 **Pattern JSON（表单项目）**。活字格根据它构建表单，HAC 根据它渲染界面并保存填报值。
+
+你不需要在页面里手写全部 JSON，插件命令会负责生成。但理解这份结构的层级，能帮助你判断页面节点应该放在哪里、导出结果为什么使用某个 key，以及校验报错时如何修正。
+
+## 根结构
+
+一个 Pattern JSON 以 `patternId` 开头，下面包含步骤数组。以下是最小的完整示例：
+
+```json
+{
+  "patternId": "PDA_Inspection",
+  "schemaVersion": "1.0.0",
+  "title": "PDA巡检离线表单",
+  "description": "覆盖所有离线表单节点类型、表单项类型及其 options 可选值的示例。",
+  "steps": [
+    {
+      "stepId": "basic-info",
+      "title": "基础信息",
+      "items": []
+    }
+  ]
+}
+```
+
+根字段说明：
+
+| 字段 | 说明 |
+| --- | --- |
+| `patternId` | 表单项目唯一编号，在同一设备上用于识别离线表单项目。 |
+| `schemaVersion` | 表单结构版本。`patternId` 不变而结构发生变更时应更新该版本，用于区分同一项目的历史结构。 |
+| `title` | 项目显示名称。 |
+| `description` | 项目说明，可选。 |
+| `steps` | 步骤数组，至少一个步骤，`stepId` 在项目内必须唯一。 |
+
+`ticket` 与表单项 `updateTime` 属于运行时字段，由“下载离线表单”命令自动补充，开发者构建 JSON 时无需写入，也不要手工维护。
+
+<ImagePlaceholder
+  title="Pattern JSON 层级示意"
+  description="建议准备一张层级图：patternId 在最外层，下挂 steps；每个 step 包含 items；items 中展示 group、text、field 三类节点，field 再展开 field.itemId 与 options。"
+  note="层级图可以用代码示例同款节点名称，方便读者把图形和 JSON 对应起来。"
+/>
+
+## 步骤
+
+步骤是表单项目下的第一层组织单位。在 HAC 中，一个步骤通常渲染为选项卡，例如“基础信息”“现场检查”“附件证据”。
+
+- `stepId`：步骤唯一编号，在同一表单项目内不能重复。
+- `title`：步骤显示标题。
+- `items`：页面节点数组，是实际渲染内容的来源。
+
+## 页面节点
+
+`step.items` 与 `group.children` 中可以使用三类节点：
+
+| `nodeType` | 作用 | 主要字段 |
+| --- | --- | --- |
+| `group` | 对下级节点做分组，可用于承载一个业务单据或一组相关字段。 | `title`、`defaultCollapsed`、`enableProgress`、`children` |
+| `text` | 显示普通文本、填报进度或文档入口。 | `title`、`content`、`textMode`、`progressDisplay` |
+| `field` | 渲染一个具体表单项，填报值保存在 `field.value`。 | `title`、`field` |
+
+### 节点配置要点
+
+- `group.defaultCollapsed`：分组是否默认折叠。
+- `group.enableProgress`：仅对步骤最外层分组生效；开启后，该分组作为填报进度统计单位。
+- `field.progressIdentifier`：布尔值，仅对启用进度的最外层分组中的直接表单项生效，用于识别填报进度对应的记录。
+- `text.content`：`textMode` 为 `plain`（默认）时显示的纯文本内容。
+- `text.textMode`：可选 `plain`、`progress`、`document`。
+- `text.progressDisplay`：仅进度文本模式使用，通过 `total`、`completed`、`completionRate` 三个布尔值控制是否显示总项数、已完成数、完成率。
+- 说明文档模式（`textMode: "document"`）作为文档说明入口，不依赖 `content`。
+
+下面的例子展示了一个分组里同时包含进度文本和图片表单项：
+
+```json
+{
+  "nodeType": "group",
+  "title": "照片和文件",
+  "defaultCollapsed": true,
+  "enableProgress": true,
+  "children": [
+    {
+      "nodeType": "text",
+      "title": "现场证据",
+      "textMode": "progress",
+      "progressDisplay": {
+        "total": true,
+        "completed": true,
+        "completionRate": true
+      }
+    },
+    {
+      "nodeType": "field",
+      "title": "现场照片",
+      "field": {
+        "itemId": "PDA_Inspection_Images",
+        "itemType": "imageItem",
+        "required": true
+      }
+    }
+  ]
+}
+```
+
+## 如何生成这些结构
+
+通常你不需要手工拼装上面的节点：
+
+1. 使用“构建离线页面内容”命令，把设计器中的分组、普通文本和表单项转换为页面内容 JSON。
+2. 使用“构建离线表单”命令，传入项目编号、名称、描述、版本号和步骤，生成完整的 Pattern JSON。
+3. 使用“检测离线表单 JSON”命令确认结构正确。
+
+完整的命令配置见[构建离线表单](/docs/solutions/offline-form/build-form)，`field` 中支持的控件类型见[表单项类型](/docs/solutions/offline-form/field-types)。

@@ -1,0 +1,215 @@
+---
+title: 表单项类型
+description: 了解文本、选择、日期、图片、文件、签名和明细列表等表单项的配置方法与值格式。
+---
+
+import { ImagePlaceholder } from "@/components/image-placeholder"
+
+表单项是离线表单中真正承载填报值的节点。每种表单项使用同一种 `field` 结构，再通过 `itemType` 告诉 HAC 渲染哪种控件。类型决定了两件事：用户在 HAC 上看到什么控件，以及回传后字段值是什么格式。
+
+## field 的公共字段
+
+所有表单项都包含以下公共字段：
+
+| 字段 | 说明 |
+| --- | --- |
+| `itemId` | 表单项全局唯一编号，建议带项目编号前缀。导出结果中的 key 是 `itemId`，不是字段标题。 |
+| `itemType` | 表单项类型。 |
+| `title` | 表单项标题。 |
+| `hint` | 输入框水印或提示文字。 |
+| `required` | 是否必填。 |
+| `value` | 默认值；没有默认值时可省略。 |
+| `updateTime` | Excel/OLE Automation 日期数值，由“下载离线表单”命令自动补充，开发者无需手工维护。 |
+| `options` | 按 `itemType` 解释的类型配置。 |
+
+## 类型总览
+
+| `itemType` | 控件 | `options` 说明 | 值格式 |
+| --- | --- | --- | --- |
+| `textItem` | 文本框 | `minLength`、`maxLength`、`regexPattern`，三项可独立省略 | 普通字符串 |
+| `passwordItem` | 密码框 | 与 `textItem` 相同 | 字符串，导出不会脱敏 |
+| `selectItem` | 下拉选择框 | `selectOptions` 必须是非空数组，每项同时包含非空 `value` 与 `label` | 选项的 `value`，不是 `label` |
+| `radioItem` | 单选框 | `selectOptions` 同上；`direction` 可选 `horizontal` 或 `vertical` | 选项的 `value` |
+| `datePicker` | 日期选择器 | `includeTime`：`true` 同时选择日期时间，`false` 仅选择日期 | 含时间 `yyyy-MM-dd HH:mm:ss`，仅日期 `yyyy-MM-dd` |
+| `timePicker` | 时间选择器 | `includeSeconds`：控制是否显示秒 | 含秒 `HH:mm:ss`，不含秒 `HH:mm` |
+| `imageItem` | 图片列表 | 见下方图片配置 | 本地填报阶段为本地附件；导出上传后为服务器临时文件标识 |
+| `fileItem` | 文件列表 | 见下方文件配置 | 本地填报阶段为本地附件；导出上传后为服务器临时文件标识 |
+| `signatureItem` | 签名 | `users` 必须是非空字符串数组；`disclaimer` 为可选确认说明 | 字段值始终是 JSON 字符串数组形态，见下方签名说明 |
+| `listItem` | 可增删明细列表 | 见下方列表配置 | 不解析内部结构，保留 HAC 返回的 JSON 字符串 |
+
+<ImagePlaceholder
+  title="基础输入控件在 HAC 中的效果"
+  description="建议准备一张 Android 端离线表单截图，同屏展示文本框、密码框、下拉选择框、单选框、日期选择器和时间选择器的真实样式，便于读者按名称对照控件外观。"
+  note="截图建议使用纵向手机尺寸，保留输入框水印和必填标记，避免包含真实敏感数据。"
+/>
+
+## 文本与校验
+
+`textItem` 与 `passwordItem` 使用同一组校验配置。你可以单独设置长度限制，也可以同时提供正则表达式：
+
+```json
+"options": {
+  "minLength": 5,
+  "maxLength": 40,
+  "regexPattern": "^[A-Z0-9-]+$"
+}
+```
+
+密码框只是控制 HAC 端输入时的显示方式。导出结果中密码值仍按普通字符串返回，不会自动脱敏，设计业务时请自行决定是否需要保护该字段。
+
+## 选择类
+
+`selectItem` 必须配置选项，`radioItem` 除选项外还可以指定排列方向：
+
+```json
+"options": {
+  "direction": "horizontal",
+  "selectOptions": [
+    { "value": "low", "label": "低" },
+    { "value": "normal", "label": "普通" },
+    { "value": "high", "label": "高" }
+  ]
+}
+```
+
+选择类字段保存的是选项的 `value`。`value` 是内部使用的稳定值，`label` 只是用户看到的文本，业务写表时应按 `value` 处理。
+
+## 日期与时间
+
+日期选择器通过 `includeTime` 决定用户能否同时选择时间：
+
+```json
+{
+  "itemType": "datePicker",
+  "options": { "includeTime": true }
+}
+```
+
+时间选择器通过 `includeSeconds` 决定是否显示秒：
+
+```json
+{
+  "itemType": "timePicker",
+  "options": { "includeSeconds": true }
+}
+```
+
+`includeSeconds` 为 `false` 时，接口会省略 `options`，字段值仍为 `HH:mm` 格式。
+
+## 图片
+
+图片项支持数量、来源、压缩和水印配置。完整示例：
+
+```json
+"options": {
+  "maxCount": 3,
+  "allowImageUpload": true,
+  "compression": {
+    "enableCompression": true,
+    "maxLongEdge": 1600,
+    "jpegQuality": 80,
+    "maxFileSizeKb": 800,
+    "minQuality": 60
+  },
+  "watermark": {
+    "enableTimestamp": true,
+    "items": [
+      { "key": "任务编号", "value": "TASK-20260907-001" },
+      { "key": "检查人员", "value": "张三" }
+    ]
+  }
+}
+```
+
+配置含义：
+
+- `maxCount`：最多图片数，`0` 表示不限制数量。
+- `allowImageUpload`：`true` 时除拍照外允许从本地选择图片；缺省或 `false` 表示仅使用拍照。
+- `compression.enableCompression`：是否启用压缩。
+- `compression.maxLongEdge`：长边压缩上限。
+- `compression.jpegQuality`：JPEG 质量。
+- `compression.maxFileSizeKb`：文件大小限制；`0` 表示不按文件大小继续压缩。
+- `compression.minQuality`：压缩质量下限。
+- `watermark.enableTimestamp`：是否在图片上叠加时间戳水印。
+- `watermark.items`：自定义水印键值列表。
+
+未使用 `allowImageUpload`、压缩或水印时，对应的属性可省略，不必填满所有配置。
+
+<ImagePlaceholder
+  title="图片与文件控件界面"
+  description="建议准备一张 HAC 端“现场照片/文件”分组截图，展示拍照入口、相册选择入口、已选图片缩略图、文件列表和数量限制提示。"
+  note="如需展示水印，可准备一张拍摄完成后带时间戳和任务编号水印的对比图。"
+/>
+
+## 文件
+
+文件项通常用于业务单据、PDF、Excel 等附件：
+
+```json
+"options": {
+  "fileItemConfig": {
+    "maxCount": 5,
+    "allowedExtensions": ".pdf,.doc,.docx,.xls,.xlsx",
+    "maxFileSizeKb": 10240
+  }
+}
+```
+
+配置含义：
+
+- `fileItemConfig.maxCount`：最多文件数，`0` 表示不限制数量。
+- `fileItemConfig.allowedExtensions`：允许的扩展名，逗号分隔，每个扩展名前带点。
+- `fileItemConfig.maxFileSizeKb`：单文件大小限制，`0` 表示不限制。
+
+## 签名
+
+签名项需要提前配置签名人员，`users` 的顺序就是 HAC 上签名区域的顺序。`disclaimer` 用于签名前的确认说明：
+
+```json
+"options": {
+  "users": ["张三", "李四"],
+  "disclaimer": "我确认以上巡检结果真实、完整，并同意使用电子签名。"
+}
+```
+
+签名结果的导出值比较特殊：它是 **JSON 字符串**，不是 JSON 数组。实际内容类似 `"[{\"userName\":\"张三\",\"fileName\":\"TEMP_SIGNATURE_ID_0001\"}]"`，服务端解析时可以先反序列化，再按用户逐个处理。
+
+<ImagePlaceholder
+  title="签名与明细列表界面"
+  description="建议准备 HAC 端签名页和明细列表页截图。签名部分展示签名顺序、免责声明和签名画布；明细列表部分展示“新增问题”按钮、行标题及多行子字段。"
+  note="签名示例可保留明显“示例”水印，避免准备真实签名。"
+/>
+
+## 明细列表
+
+明细列表允许用户按模板新增、删除多行内容，常用于巡检问题清单、材料清单等重复结构：
+
+```json
+"options": {
+  "minCount": 0,
+  "maxCount": 20,
+  "defaultCount": 1,
+  "addButtonText": "新增问题",
+  "itemTitle": "问题 {index}",
+  "children": [
+    {
+      "nodeType": "field",
+      "title": "问题描述",
+      "field": {
+        "itemId": "PDA_Inspection_Issues_Description",
+        "itemType": "textItem",
+        "required": true
+      }
+    }
+  ]
+}
+```
+
+列表约束：
+
+- `minCount`、`maxCount`、`defaultCount`：最小行数、最大行数、默认行数。
+- `addButtonText`、`itemTitle`：新增按钮文字与行标题模板，`{index}` 会被替换为行序号。
+- `children` 是列表行模板，每个子 `field` 的 `itemId` 仍需全局唯一。
+- `children` 中不能再使用 `listItem`，避免无限嵌套。
+
+明细列表本身不参与字段级解析：回传时内部结构会被原样保留为 JSON 字符串，由服务端负责反序列化并写入子表。

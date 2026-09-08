@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { siteModules } from "@/lib/site-config"
+import { siteModules, solutionModules } from "@/lib/site-config"
 
 export function MobileNav() {
   const [open, setOpen] = useState(false)
@@ -37,16 +37,43 @@ export function MobileNav() {
         <DialogTitle className="sr-only">主导航</DialogTitle>
 
         <nav aria-label="移动端主导航" className="flex flex-col gap-1">
-          {siteModules.map((module) => (
-            <Link
-              key={module.id}
-              href={module.href}
-              onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              {module.shortTitle}
-            </Link>
-          ))}
+          {siteModules.map((module) =>
+            module.id === "solutions" ? (
+              <div key={module.id} className="px-3 py-1">
+                <Link
+                  href={module.href}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-muted"
+                >
+                  {module.shortTitle}
+                </Link>
+                <div className="mt-1 flex flex-col">
+                  {solutionModules.map((solution) => (
+                    <Link
+                      key={solution.id}
+                      href={solution.docsHref}
+                      onClick={() => setOpen(false)}
+                      className="ml-3 rounded-lg border-l pl-4 pr-3 py-2.5 text-base font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      {solution.shortTitle}
+                      <span className="mt-0.5 block text-xs font-normal">
+                        {solution.title}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={module.id}
+                href={module.href}
+                onClick={() => setOpen(false)}
+                className="rounded-lg px-3 py-3 text-lg font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                {module.shortTitle}
+              </Link>
+            ),
+          )}
         </nav>
       </DialogContent>
     </Dialog>

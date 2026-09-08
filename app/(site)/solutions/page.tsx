@@ -32,6 +32,25 @@ const solutions = [
       label: "了解框架设计",
     },
   },
+  {
+    title: "HAC 离线填报",
+    description:
+      "让现场作业人员断网也能继续完成表单填报，恢复网络后把填报记录与附件安全回传到活字格。",
+    capabilities: [
+      "自定义离线表单定义与多步骤填报",
+      "图片、文件、签名与明细列表支持",
+      "表单与说明 PDF 下发到 HAC",
+      "记录回传、附件上传与设备数据维护",
+    ],
+    primaryLink: {
+      href: "/docs/solutions/offline-form",
+      label: "了解方案设计",
+    },
+    secondaryLink: {
+      href: "/docs/solutions/offline-form/form-structure",
+      label: "查看表单结构",
+    },
+  },
 ]
 
 export default function SolutionsPage() {

@@ -1,0 +1,78 @@
+---
+title: 介绍
+description: 使用 HAC 在弱网或无网环境中完成表单填报，并在恢复网络后把填报记录与附件回传到活字格应用。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+import { ImagePlaceholder } from "@/components/image-placeholder"
+
+HAC 离线填报是一套让现场作业人员**离开网络也能继续工作**的活字格方案。它的目标是解决这样的现场场景：
+
+> 作业人员在长时间没有网络、APP 退出或设备重启后，仍需要继续完成表单填报。表单本身支持自定义配置，可以应对巡检、普查、验收等不同业务；恢复在线后，填报记录和本地附件要安全回到活字格应用。
+
+在这套方案中，活字格负责把“表单模板”下发给设备，HAC 负责在设备本地渲染表单、保存记录和附件，网络恢复后再把结果回传。活字格开发者不需要写 Android 原生代码，也不需要直接调用 JS 原生接口，所有动作都通过活字格插件命令完成。
+
+## 模块组成
+
+| 组成部分 | 作用 |
+| --- | --- |
+| 活字格插件命令 | 在活字格平台中执行构建、校验、下载、上传和设备数据维护，是活字格与 HAC 协作的唯一调用入口。 |
+| Pattern JSON | 下发给 HAC 的离线表单定义，描述步骤、页面节点和表单项，也叫表单项目。 |
+| HAC 离线模块 | 负责渲染表单、保存记录与附件，并提供离线填报、提交和记录查看入口。 |
+| ExportResult JSON | 附件处理完成后返回的填报记录与上传结果。 |
+| 服务端解析与写表 | 将回传结果解析为业务数据，并完成附件正式归属。 |
+
+## 插件命令概览
+
+HAC 离线填报插件提供 6 个活字格命令：
+
+| 命令 | 作用 | 参考文档 |
+| --- | --- | --- |
+| 构建离线页面内容 | 把设计器中的分组、文本和表单项转换为页面内容 JSON。 | [构建离线表单](/docs/solutions/offline-form/build-form) |
+| 构建离线表单 | 把项目编号、名称、描述、版本号和步骤组装为完整 Pattern JSON。 | [构建离线表单](/docs/solutions/offline-form/build-form) |
+| 检测离线表单 JSON | 校验 Pattern JSON 是否符合标准结构，返回是否有效和错误点。 | [构建离线表单](/docs/solutions/offline-form/build-form) |
+| 下载离线表单 | 把 Pattern JSON 下发到 HAC 并保存在设备本地。 | [下发到 HAC](/docs/solutions/offline-form/download-form) |
+| 下载离线表单说明 PDF | 把说明 PDF 下载到设备，并绑定到指定离线表单项目。 | [下发到 HAC](/docs/solutions/offline-form/download-form) |
+| 上传离线表单 | 导出填报记录、上传本地附件，并维护设备上的记录与项目。 | [回传填报数据](/docs/solutions/offline-form/upload-form) |
+
+## 整体流程
+
+一次完整的离线填报按照下面的顺序运转：
+
+1. 活字格开发者构建页面内容和表单定义，组合成 Pattern JSON。
+2. 联网环境下，现场作业人员通过 HAC 访问活字格页面时，插件把 Pattern JSON 下发到 HAC 并保存在本地。
+3. HAC 根据 Pattern JSON 渲染原生 Android 离线表单界面，支持说明文本、分组、进度、签名、列表以及图片和文件等表单项。
+4. 用户在离线环境下从 HAC 菜单进入离线填报入口，完成填报、提交、记录查看和附件管理；填报记录与附件保存在 HAC 本地。
+5. 恢复网络后，用户通过 HAC 访问活字格上传页面，插件按项目导出填报记录，并把本地附件上传到活字格服务器。
+6. 上传命令把导出结果返回到活字格变量，页面或服务端命令根据 `itemId` 与业务规则解析并写入业务数据表。
+
+<ImagePlaceholder
+  title="整体数据流示意"
+  description="建议准备一张从活字格构建、在线下发、HAC 离线填报、恢复网络回传，到服务端写表的端到端流程图，突出“网络断开仍可填报”和“联网后才回传”两个阶段。"
+  note="建议使用横向流程图，宽度约 1600 像素；可沿用站内架构图的线条与配色，避免叠加重叠文字。"
+/>
+
+<Callout type="warn">
+附件上传后默认位于活字格服务器的**附件临时目录**，只有后续写表操作完成，附件才会被正式回写并归属到业务记录。
+</Callout>
+
+## 核心概念
+
+| 概念 | 说明 |
+| --- | --- |
+| Pattern / 表单项目 | 一次下发到 HAC 的完整表单定义，由 `patternId` 唯一标识，可包含多个步骤。 |
+| Step / 步骤 | Pattern 下的步骤，在 HAC 中通常渲染为选项卡，由 `stepId` 标识。 |
+| Node / 页面节点 | `step.items` 中的元素，`nodeType` 可为 `group`、`text`、`field`。 |
+| Field / 表单项 | 实际承载填报值的节点，通过 `field.itemId` 唯一标识并作为导出结果中的 key。 |
+| Record / 填报记录 | HAC 本地保存的一次填报结果，导出时以 `recordId` 区分。 |
+| ExportResult | 附件处理完成后返回的标准导出数据结构。 |
+
+## 阅读路线
+
+- 想先理解一张离线表单由哪些部分组成：[表单结构](/docs/solutions/offline-form/form-structure)
+- 想设计文本、图片、签名、明细列表等控件：[表单项类型](/docs/solutions/offline-form/field-types)
+- 想从零生成一份标准 JSON 并校验：[构建离线表单](/docs/solutions/offline-form/build-form)
+- 想让作业人员能在设备上看到表单：[下发到 HAC](/docs/solutions/offline-form/download-form)
+- 想把设备上的记录和附件带回活字格：[回传填报数据](/docs/solutions/offline-form/upload-form)
+- 想理解回传结果的每个字段：[导出结果](/docs/solutions/offline-form/export-result)
+- 想完成业务入库和附件正式归属：[服务端解析与写表](/docs/solutions/offline-form/server-parse)
