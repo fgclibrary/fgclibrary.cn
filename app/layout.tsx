@@ -44,6 +44,9 @@ export default function RootLayout({
             enableSystem: true,
             disableTransitionOnChange: true,
           }}
+          // 静态导出下没有搜索服务端接口，改为加载构建期生成的
+          // 索引文件（/api/search）在浏览器端本地检索。
+          search={{ options: { type: "static" } }}
           i18n={docsI18n}
         >
           {children}

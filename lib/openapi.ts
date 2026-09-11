@@ -22,11 +22,12 @@ function resolveServers(
   }
 }
 
+// 站点为纯静态导出，不提供试调代理（playground 已关闭），
+// 因此无需配置 proxyUrl。
 export const openapi = createOpenAPI({
   input: {
     default: resolveServers(openapiDocument as ServerDocument, apiServerUrl),
   },
-  proxyUrl: "/api/proxy",
 })
 
 export const tokenEndpoint = createOpenAPI({
@@ -36,5 +37,4 @@ export const tokenEndpoint = createOpenAPI({
       authServerUrl,
     ),
   },
-  proxyUrl: "/api/proxy",
 })
