@@ -4,6 +4,7 @@ import { ImageResponse } from "next/og"
 import { getPageImage, source } from "@/lib/source"
 
 export const revalidate = false
+export const dynamic = "force-static"
 
 type RouteProps = {
   params: Promise<{ slug: string[] }>
