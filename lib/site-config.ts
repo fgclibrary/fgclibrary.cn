@@ -27,8 +27,8 @@ export type SiteAnnouncementConfig = {
 
 export const siteAnnouncement: SiteAnnouncementConfig = {
   enabled: true,
-  label: "RBAC 权限框架已上线",
-  href: "/docs/solutions/rbac",
+  label: "HAC 离线填报已上线",
+  href: "/docs/solutions/offline-form",
 }
 
 export const siteModules: SiteModule[] = [
