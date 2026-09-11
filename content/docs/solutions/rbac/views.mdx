@@ -50,13 +50,13 @@ import {TableIcon} from 'lucide-react'
 
 为区分角色与角色分类，确保能通过唯一标识精确定位目标对象，需要人为定义一个 **角色唯一标识** 作为该视图的唯一键。具体做法是将视图中的 `Id` 与 `是否角色` 两个字段以特殊符号 `~` 拼接，该公式字段的值即为角色唯一标识。同时，为维护分类的层级结构，还需同步维护父角色的唯一标识。
 
-<img src="/images/role-unique-key.png" alt="角色唯一标识的配置页" className="mx-auto block w-1/2" />
+<img src="/images/role-unique-key.webp" alt="角色唯一标识的配置页" className="mx-auto block w-1/2" />
 
 ### 图标
 
 角色与组织结构在页面上通常以树形结构呈现，为使展示更加美观，需要为各节点配置图标。框架通过[辅助表](./auxiliary-table)分别维护角色节点与组织节点的图标，公式字段的值须与辅助表中对应的图标 ID 严格匹配。辅助表中的图标以附件形式维护，可通过框架中的 `元数据管理 - 图标管理` 进行管理。
 
-![图标管理](/images/icon-config.png)
+![图标管理](/images/icon-config.webp)
 
 <Callout>
   下载框架工程文件后，默认图标会自动存放在工程目录下以 `_fgcfiles` 为后缀的文件夹中。

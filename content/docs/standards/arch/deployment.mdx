@@ -27,7 +27,7 @@ import { Callout } from 'fumadocs-ui/components/callout'
 - 文件存储：活字格官方运维的高可用文件服务；
 - 数据库：标准的 MySQL、SQL Server 服务，独占资源，可选高可用服务。
 
-![活字格云架构](/images/standard/arch-deployment-cloud.png "活字格云架构")
+![活字格云架构](/images/standard/arch-deployment-cloud.webp "活字格云架构")
 
 在实际使用中，活字格云具备以下能力，帮助您构建安全可靠的系统运行环境。
 - 连接：允许通过互联网（外网）访问该系统。
@@ -44,7 +44,7 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 私有化部署架构图：
 
-![私有化部署架构](/images/standard/arch-deployment-private.png "私有化部署架构")
+![私有化部署架构](/images/standard/arch-deployment-private.webp "私有化部署架构")
 
 根据预算和项目需求，生产环境的部署方案有单机、标准和集群3种；运维和开发环境也可以进行裁剪和调整。
 
@@ -64,7 +64,7 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 单机部署架构图：
 
-![单机部署架构](/images/standard/arch-deployment-single.png "单机部署架构")
+![单机部署架构](/images/standard/arch-deployment-single.webp "单机部署架构")
 
 </Callout>
 
@@ -82,7 +82,7 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 为了提升性能，我们推荐您将数据库从活字格服务管理器所在的机器上独立出来。这种做法需要用到 2 台服务器（应用/网关服务器 + 数据库服务器），虽然每台服务器的配置较单机部署更低，但总成本会稍高一些。
 
-![标准部署架构](/images/standard/arch-deployment-standard.png "标准部署架构")
+![标准部署架构](/images/standard/arch-deployment-standard.webp "标准部署架构")
 
 </Callout>
 
@@ -108,11 +108,11 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 以 nginx 为代表的成熟的反向代理服务器（Layer 7 软件负载均衡）在性能和可靠性方面与传统的Layer 4 端口转发器差异不大，成本低很多。详细的搭建文档参见：[活字格智能集群搭建方案（私有化方案）](https://gcdn.grapecity.com.cn/showtopic-152640-1-1.html)。
 
-![集群部署架构](/images/standard/arch-deployment-cluster-1.png "集群部署架构")
+![集群部署架构](/images/standard/arch-deployment-cluster-1.webp "集群部署架构")
 
 详细的搭建文档参见：[活字格@AWS智能集群的架构与搭建方案](https://gcdn.grapecity.com.cn/showtopic-152955-1-1.html)。
 
-![集群部署架构](/images/standard/arch-deployment-cluster-2.png "集群部署架构")
+![集群部署架构](/images/standard/arch-deployment-cluster-2.webp "集群部署架构")
 
 <Callout>
 

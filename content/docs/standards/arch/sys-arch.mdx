@@ -24,7 +24,7 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 单体架构是分布式系统中最简单的部署架构，通常用于个人开发者构建非关键型应用（不涉及企业核心业务、规模通常较小、对不需要经常修改和维护，如数据填报与自动汇总等）。在使用活字格时，单体架构最主要的特征是在页面中利用数据绑定、公式和命令完成全部业务逻辑。
 
-![单体架构](/images/standard/arch-system-single.png “单体架构”)
+![单体架构](/images/standard/arch-system-single.webp "单体架构")
 
 **【推荐】**对于团队开发的应用或复杂度较高的应用或模块，强烈推荐采用前后端分离（RPC架构）。
 
@@ -32,7 +32,7 @@ import { Callout } from 'fumadocs-ui/components/callout'
 
 RPC架构中，业务逻辑以服务端命令的形式运行在服务端，前端仅关注于页面交互，最终实现前后端解耦，让多个终端的多个页面可以复用同一套业务逻辑。这种做法也被活字格的用户形象地称为”前后端分离”。在使用活字格时，RPC架构最主要的特征是服务端命令的使用。即除了简单的列表展示和单据增删改之外，其它业务逻辑均采用服务端命令来实现。
 
-![RPC架构](/images/standard/arch-system-rpc.png “RPC架构”)
+![RPC架构](/images/standard/arch-system-rpc.webp "RPC架构")
 
 *【参考】*在常规的活字格项目开发过程中，架构的选择并非单一不变，可以酌情混用前后端分离架构和单体架构的开发思想。
 
