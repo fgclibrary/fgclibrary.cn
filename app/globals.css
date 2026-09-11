@@ -8,8 +8,8 @@
 @import "fumadocs-openapi/css/preset.css";
 
 .typeset-docs {
-  --typeset-font-body: var(--font-geist);
-  --typeset-font-heading: var(--font-geist);
+  --typeset-font-body: var(--font-geist-sans);
+  --typeset-font-heading: var(--font-geist-sans);
   --typeset-font-mono: var(--font-geist-mono);
   --typeset-size: 15px;
   --typeset-leading: 1.75;
@@ -21,7 +21,7 @@
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans:
-    var(--font-geist), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     system-ui, sans-serif;
   --font-mono:
     var(--font-geist-mono), ui-monospace, "SFMono-Regular", Consolas,

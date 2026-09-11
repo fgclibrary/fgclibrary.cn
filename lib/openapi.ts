@@ -2,39 +2,23 @@ import { createOpenAPI, type OpenAPIOptions } from "fumadocs-openapi/server"
 import authOpenapiDocument from "@/auth-openapi.json"
 import openapiDocument from "@/openapi.json"
 
-const apiServerUrl = process.env.OPENAPI_SERVER_URL
-const authServerUrl = process.env.AUTH_SERVER_URL
-
+// JSON 导入会把 `openapi` 字段推断为 string，而 OpenAPI 文档类型要求字面量，
+// 因此这里做一次类型收窄。
 type SchemaRecord = Exclude<NonNullable<OpenAPIOptions["input"]>, string[]>
 type ServerDocument = Exclude<SchemaRecord[string], string | (() => unknown)>
 
-function resolveServers(
-  document: ServerDocument,
-  serverUrl?: string,
-): ServerDocument {
-  if (!serverUrl) {
-    return document
-  }
-
-  return {
-    ...document,
-    servers: [{ url: serverUrl }],
-  }
-}
-
-// 站点为纯静态导出，不提供试调代理（playground 已关闭），
-// 因此无需配置 proxyUrl。
+// 纯静态站点：接口地址直接取自 OpenAPI 文档中的 `servers`
+// （现为 `https://your-forguncy-site` 占位，供读者替换为自身站点）。
+// 站点不提供试调代理，无需 proxyUrl；也不通过环境变量注入地址，
+// 避免构建机上的本地地址被写入公开产物。
 export const openapi = createOpenAPI({
   input: {
-    default: resolveServers(openapiDocument as ServerDocument, apiServerUrl),
+    default: openapiDocument as ServerDocument,
   },
 })
 
 export const tokenEndpoint = createOpenAPI({
   input: {
-    default: resolveServers(
-      authOpenapiDocument as ServerDocument,
-      authServerUrl,
-    ),
+    default: authOpenapiDocument as ServerDocument,
   },
 })

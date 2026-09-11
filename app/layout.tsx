@@ -1,19 +1,10 @@
 import { RootProvider } from "fumadocs-ui/provider/next"
+import { GeistMono } from "geist/font/mono"
+import { GeistSans } from "geist/font/sans"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
 import { docsI18n } from "@/lib/layout.shared"
 
 import "./globals.css"
-
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-})
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-})
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://fgclibrary.cn"),
@@ -34,7 +25,7 @@ export default function RootLayout({
     <html
       lang="zh-CN"
       suppressHydrationWarning
-      className={`${geist.variable} ${geistMono.variable} antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}
     >
       <body className="flex min-h-screen flex-col">
         <RootProvider
