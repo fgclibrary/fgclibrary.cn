@@ -16,7 +16,8 @@
     "check": "biome check .",
     "check:write": "biome check --write .",
     "typecheck": "fumadocs-mdx && tsc --noEmit",
-    "images:optimize": "node scripts/optimize-images.mjs"
+    "images:optimize": "node scripts/optimize-images.mjs",
+    "deploy:prod": "bash scripts/deploy-prod.sh"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
