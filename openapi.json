@@ -2763,8 +2763,8 @@
   },
   "servers": [
     {
-      "url": "http://hzg.orb.local:8115/rbac/ServerCommand",
-      "description": "本地服务器"
+      "url": "https://your-forguncy-site/rbac/ServerCommand",
+      "description": "请替换为你的活字格站点地址"
     }
   ],
   "security": [

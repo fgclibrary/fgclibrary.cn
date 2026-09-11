@@ -10,12 +10,11 @@ pnpm install --frozen-lockfile
 pnpm build          # 产物在 out/
 ```
 
-两个注意点：
+一个注意点：**构建需要联网**以安装依赖。字体已改为本地自托管
+（`geist` 包内随附的 woff2），构建期不再请求 Google Fonts。
 
-- **构建需要公网**。`next/font/google` 在构建期下载并自托管 Geist 字体，因此构建应放在 CI 等
-  可联网的环境，不要放在境内服务器上构建。
-- **环境变量在构建期注入**。`OPENAPI_SERVER_URL`、`AUTH_SERVER_URL` 会被写进静态产物，
-  需在**构建环境**中设置（见 `.env.example`）；部署后修改它们必须重新构建，重启服务无效。
+构建无需任何环境变量。接口地址来自仓库内的 `openapi.json` / `auth-openapi.json`
+的 `servers` 字段（当前为 `https://your-forguncy-site` 占位值），如需调整请直接改这两个文件。
 
 建议在 CI 中构建并打包 `out/` 作为制品（artifact）或镜像，服务器只负责取用与发布。
 
