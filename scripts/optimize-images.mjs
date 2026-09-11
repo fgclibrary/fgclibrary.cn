@@ -13,7 +13,7 @@
  * 处理完成后，记得把 Markdown 中的引用扩展名改为 .webp。
  */
 import { readdir, stat, unlink } from "node:fs/promises"
-import { extname, join } from "node:path"
+import { join } from "node:path"
 import sharp from "sharp"
 
 const ROOT = "public/images"
@@ -81,9 +81,7 @@ for (const source of sources) {
   if (replaceOriginals) await unlink(source)
 }
 
-console.log(
-  `\n完成：转换 ${converted} 张，跳过 ${skipped} 张（已是最新）`,
-)
+console.log(`\n完成：转换 ${converted} 张，跳过 ${skipped} 张（已是最新）`)
 console.log(
   `体积：${(beforeTotal / 1024 / 1024).toFixed(2)}MB -> ${(afterTotal / 1024 / 1024).toFixed(2)}MB`,
 )
