@@ -1,47 +1,17 @@
-# 格言格语（fgclibrary）
+# 格言格语
 
-格言格语项目网站。
+> 活字格开发资源库 · <https://fgclibrary.cn>
 
-## 内置能力
+汇集活字格开发中的能力路径、工程规范、成熟方案与产品集成经验。
 
-- Next.js App Router、React 和 TypeScript
-- Tailwind CSS 与 shadcn/ui（Base UI）
-- Biome 代码检查与格式化
-- 本地 Geist 字体与中文系统字体回退
-- 深色模式
-- Node.js 版本约束
-- GitHub Actions 持续集成
+## 内容栏目
 
-## 本地开发
+- **能力地图** — 定位当前能力阶段，找到从入门到企业级交付的下一步。
+- **解决方案** — 可直接应用到项目中的完整工程方案，如 RBAC 权限框架、HAC 离线填报。
+- **标准化** — 架构、开发与运维过程中可执行的实践建议。
+- **产品集成** — 活字格与 SpreadJS 等产品及外部系统的协作方式。
+- **插件与扩展** — 使用 Java 等技术扩展活字格服务端能力。
 
-```bash
-nvm use
-corepack enable
-pnpm install
-pnpm run dev
-```
+## 反馈
 
-开发服务器默认运行在 [http://localhost:3000](http://localhost:3000)。
-
-## 常用命令
-
-```bash
-pnpm run dev          # 启动开发服务器
-pnpm run check        # 检查格式、代码质量和导入
-pnpm run check:write  # 自动修复 Biome 可处理的问题
-pnpm run typecheck    # 执行 TypeScript 类型检查
-pnpm run build        # 执行生产构建
-pnpm run start        # 启动生产服务器
-```
-
-## 添加 shadcn 组件
-
-通过 shadcn CLI 添加组件：
-
-```bash
-pnpm dlx shadcn@latest add <component>
-```
-
-组件会添加到 `components/ui`。该目录已从 Biome 的检查和格式化范围中排除，方便后续通过 CLI 更新。
-
-Agent 协作约定见 [AGENTS.md](./AGENTS.md)。
+内容有误或希望补充，欢迎通过 [Issues](https://github.com/fgclibrary/fgclibrary.cn/issues) 反馈。
