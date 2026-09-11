@@ -39,7 +39,7 @@ SHORT="$(git rev-parse --short HEAD)"
 BRANCH="$(git branch --show-current)"
 ARCHIVE="/tmp/fgclibrary-${SHORT}.tar.gz"
 
-echo "==> 发布 $SHORT（分支 $BRANCH）"
+echo "==> 发布 ${SHORT}（分支 ${BRANCH}）"
 
 if [ "$BUILD" -eq 1 ]; then
   echo "==> 构建"
