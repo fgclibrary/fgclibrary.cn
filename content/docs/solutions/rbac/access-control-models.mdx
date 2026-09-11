@@ -26,7 +26,7 @@ description: 活字格应用的权限控制模式。
 
 > 基础权限文件夹默认包含系统所有基础权限。由于框架仅提供用户管理与权限管理能力，安全等级较高，文件夹下的基础权限组默认未配置任何系统已有权限。
 
-![权限组配置](/images/access-control-config.png)
+![权限组配置](/images/access-control-config.webp)
 
 ### 分配权限组
 
@@ -35,7 +35,7 @@ description: 活字格应用的权限控制模式。
 - **开发阶段** — 在设计器中预配置
 - **发布后** — 通过服务端管理控制台配置，或在应用内 `permissionConfig`（权限配置）页面配置
 
-![角色分配权限组](/images/conbine-role-with-permission.png)
+![角色分配权限组](/images/conbine-role-with-permission.webp)
 
 ## 角色继承
 
@@ -43,11 +43,11 @@ description: 活字格应用的权限控制模式。
 
 以框架内置角色为例：用户管理员拥有用户管理权限组，权限管理员拥有权限管理权限组。总管理员本身未配置任何权限，但通过继承用户管理员和权限管理员两个角色，即可同时获得两者的全部权限。
 
-![角色继承](/images/role-inherit.png)
+![角色继承](/images/role-inherit.webp)
 
 配置完成后，在权限配置界面可以看到总管理员已拥有用户管理和权限管理对应的权限。
 
-![角色继承权限](/images/role-inherit-permission.png)
+![角色继承权限](/images/role-inherit-permission.webp)
 
 <Callout>
 通过角色继承获得的权限，无法在权限配置界面中直接管理，只能在角色权限关系中进行调整。
