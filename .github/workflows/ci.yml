@@ -16,14 +16,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 必须先安装 pnpm：setup-node 开启 cache: pnpm 时会调用
+      # `pnpm store path` 计算缓存键，pnpm 尚未就绪会导致该步骤失败。
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 12.3.4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
-
-      - name: Install pnpm
-        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
