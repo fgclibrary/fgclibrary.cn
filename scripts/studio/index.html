@@ -66,6 +66,8 @@
             </div>
             <button type="button" id="presetSave" class="btn btn--tiny">保存预设</button>
             <button type="button" id="presetDelete" class="btn btn--tiny">删除</button>
+            <button type="button" id="presetExport" class="btn btn--tiny">导出</button>
+            <button type="button" id="presetImport" class="btn btn--tiny">导入</button>
           </div>
         </div>
 
@@ -84,16 +86,6 @@
               <span>封面副标题</span>
               <input id="subtitle" placeholder="可留空" />
             </label>
-            <div class="settings__row">
-              <label class="field">
-                <span>封面日期</span>
-                <input id="date" />
-              </label>
-              <label class="field field--check">
-                <input type="checkbox" id="toc" checked />
-                <span>生成目录页</span>
-              </label>
-            </div>
             <label class="field">
               <span>站内链接前缀</span>
               <input
@@ -102,6 +94,163 @@
                 spellcheck="false"
               />
             </label>
+
+            <label class="field field--check">
+              <input type="checkbox" id="toc" checked />
+              <span>生成目录页</span>
+            </label>
+
+            <details class="group" id="coverGroup">
+              <summary>封面设置</summary>
+
+              <div class="group__body">
+                <div class="settings__row">
+                  <label class="field">
+                    <span>版本</span>
+                    <input id="version" placeholder="如 v1.0" />
+                  </label>
+                  <label class="field">
+                    <span>封面日期</span>
+                    <input id="date" />
+                  </label>
+                </div>
+
+                <label class="field">
+                  <span>封面备注</span>
+                  <input
+                    id="note"
+                    placeholder="如：内部资料，请勿外传"
+                  />
+                </label>
+
+                <label class="field">
+                  <span>Logo</span>
+                  <div class="file-field">
+                    <input
+                      id="logo"
+                      placeholder="留空用默认 GrapeCity 标识；填路径或网址"
+                      spellcheck="false"
+                    />
+                    <button type="button" data-pick="logo" class="btn btn--tiny">
+                      选择文件
+                    </button>
+                  </div>
+                  <p class="file-note" id="logoNote" hidden></p>
+                  <img id="logoPreview" class="thumb" alt="logo 预览" hidden />
+                </label>
+                <label class="field field--check">
+                  <input type="checkbox" id="showLogo" checked />
+                  <span>在封面显示 logo</span>
+                </label>
+
+                <label class="field">
+                  <span>背景图</span>
+                  <div class="file-field">
+                    <input
+                      id="coverBg"
+                      placeholder="留空则纯白背景；填路径或网址"
+                      spellcheck="false"
+                    />
+                    <button
+                      type="button"
+                      data-pick="coverBg"
+                      class="btn btn--tiny"
+                    >
+                      选择文件
+                    </button>
+                  </div>
+                  <p class="file-note" id="coverBgNote" hidden></p>
+                  <img
+                    id="coverBgPreview"
+                    class="thumb thumb--wide"
+                    alt="背景图预览"
+                    hidden
+                  />
+                </label>
+
+                <div class="settings__row">
+                  <label class="field">
+                    <span>背景不透明度</span>
+                    <input
+                      id="coverBgOpacity"
+                      placeholder="0-1，留空为 1"
+                      spellcheck="false"
+                    />
+                  </label>
+                  <label class="field">
+                    <span>封面配色</span>
+                    <select id="coverTheme">
+                      <option value="auto">自动（按背景亮度）</option>
+                      <option value="light">浅色文字</option>
+                      <option value="dark">深色文字</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label class="field">
+                  <span>Logo 宽度</span>
+                  <input id="logoWidth" placeholder="默认 48mm" spellcheck="false" />
+                </label>
+
+                <div class="settings__row">
+                  <label class="field">
+                    <span>主标题字号</span>
+                    <input
+                      id="fontTitle"
+                      placeholder="默认 36pt"
+                      spellcheck="false"
+                    />
+                  </label>
+                  <label class="field">
+                    <span>副标题字号</span>
+                    <input
+                      id="fontSubtitle"
+                      placeholder="默认 12pt"
+                      spellcheck="false"
+                    />
+                  </label>
+                  <label class="field">
+                    <span>信息区字号</span>
+                    <input
+                      id="fontMeta"
+                      placeholder="默认 14px"
+                      spellcheck="false"
+                    />
+                  </label>
+                </div>
+
+                <div class="settings__row">
+                  <label class="field">
+                    <span>Logo 位置（距顶）</span>
+                    <input
+                      id="positionLogo"
+                      placeholder="默认 5.4%"
+                      spellcheck="false"
+                    />
+                  </label>
+                  <label class="field">
+                    <span>主标题位置（距顶）</span>
+                    <input
+                      id="positionTitle"
+                      placeholder="默认 30%"
+                      spellcheck="false"
+                    />
+                  </label>
+                  <label class="field">
+                    <span>信息区位置（距顶）</span>
+                    <input
+                      id="positionMeta"
+                      placeholder="默认 92%"
+                      spellcheck="false"
+                    />
+                  </label>
+                </div>
+                <p class="file-note">
+                  字号可写 36pt、48px 等单位，只写数字时按 pt；位置可写 28%、90mm，
+                  只写数字时按 %，可填 0–100 自行摆放。留空用默认值。
+                </p>
+              </div>
+            </details>
           </div>
         </div>
 
@@ -137,5 +286,16 @@
     </dialog>
 
     <script type="module" src="/studio.js"></script>
+
+    <!-- 「选择文件」按钮共用；选中的图片会交给服务端落盘再引用。 -->
+    <input
+      type="file"
+      id="filePicker"
+      accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
+      hidden
+    />
+
+    <!-- 预设导入：选择此前导出的 JSON 备份。 -->
+    <input type="file" id="presetPicker" accept="application/json,.json" hidden />
   </body>
 </html>

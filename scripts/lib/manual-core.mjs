@@ -9,6 +9,8 @@
  */
 
 import { existsSync } from "node:fs"
+import { readFile } from "node:fs/promises"
+import path from "node:path"
 import puppeteer from "puppeteer-core"
 
 export const DEFAULT_BASE_URL = "http://localhost:3000"
@@ -16,6 +18,9 @@ export const DEFAULT_BASE_URL = "http://localhost:3000"
 export const SITE_NAME = "格言格语"
 export const SITE_TAGLINE =
   "沉淀活字格开发中的工程经验、可复用方案与产品集成实践"
+
+/** 封面默认 logo：站点上的 GrapeCity 标识（浅色底用的深色版）。 */
+export const DEFAULT_COVER_LOGO = "/assets/grapecity-logo-light.png"
 
 /** 常见的 Chromium 内核浏览器，按优先级查找，避免额外下载一份 Chromium。 */
 const BROWSER_CANDIDATES = [
@@ -282,6 +287,24 @@ export function escapeHtml(value) {
     .replaceAll('"', "&quot;")
 }
 
+/** 转义 CSS 字符串字面量里的特殊字符（用于 url() 与 content）。 */
+function cssUrl(value) {
+  return String(value)
+    .replaceAll("\\", "\\\\")
+    .replaceAll('"', '\\"')
+    .replaceAll("\n", "")
+    .replaceAll("(", "\\(")
+    .replaceAll(")", "\\)")
+}
+
+/** 转义 CSS content 属性里的字符串。 */
+function cssString(value) {
+  return String(value)
+    .replaceAll("\\", "\\\\")
+    .replaceAll('"', '\\"')
+    .replaceAll("\n", " ")
+}
+
 function buildTableOfContents(chapters) {
   const baseDepth = Math.min(...chapters.map((chapter) => chapter.node.depth))
   const rows = []
@@ -322,21 +345,133 @@ ${rows.join("\n")}
 </section>`
 }
 
-function buildCover({ title, subtitle, date, count }) {
-  return `<section class="export-cover">
-  <div class="export-cover__brand">
-    <span class="export-cover__brand-name">${escapeHtml(SITE_NAME)}</span>
-    <span class="export-cover__brand-tagline">${escapeHtml(SITE_TAGLINE)}</span>
-  </div>
-  <div class="export-cover__main">
-    <h1 class="export-cover__title">${escapeHtml(title)}</h1>
-    ${subtitle ? `<p class="export-cover__subtitle">${escapeHtml(subtitle)}</p>` : ""}
-  </div>
-  <div class="export-cover__meta">
-    <span>共 ${count} 篇文档</span>
-    <span>${escapeHtml(date)}</span>
+/**
+ * 封面内容与版式。
+ *
+ * 版式（A4 满版）：
+ *   右上 —— logo
+ *   中部 —— 标题、副标题
+ *   左下 —— 版本、日期（上下结构），可再加一行备注
+ * 背景图铺满整页，内容压在其上。
+ */
+function buildCover({
+  title,
+  subtitle,
+  version,
+  date,
+  note,
+  logo,
+  logoWidth,
+  background,
+  backgroundOpacity,
+  isDark,
+  fontSize = {},
+  position = {},
+}) {
+  // 背景图直接设在内层 .export-cover__bleed 上：
+  // background-image 不是可继承属性，放在外层再用 inherit 取不到值。
+  // 内层独占一层，opacity 也正好只影响背景而不影响文字。
+  //
+  // 注意：这里必须对整段样式做 HTML 转义。属性用双引号包裹，而 url("...")
+  // 里也有双引号，不转义会让属性在 url( 处提前闭合，背景图静默失效。
+  const bleedStyle = background
+    ? `background-image:url("${cssUrl(background)}");${
+        backgroundOpacity === undefined
+          ? ""
+          : `--cover-bg-opacity:${backgroundOpacity};`
+      }`
+    : ""
+
+  // 左下信息区：每个字段内部是「label 在上、value 在下」，各字段横向排成一行。
+  const metaItems = [
+    version ? { key: "version", label: "版本", value: version } : null,
+    date ? { key: "date", label: "日期", value: date } : null,
+    note ? { key: "note", label: "备注", value: note } : null,
+  ].filter(Boolean)
+
+  const metaHtml = metaItems
+    .map(
+      (
+        item,
+      ) => `<div class="export-cover__meta export-cover__meta--${item.key}">
+        <span class="export-cover__meta-label">${escapeHtml(item.label)}</span>
+        <span class="export-cover__meta-value">${escapeHtml(item.value)}</span>
+      </div>`,
+    )
+    .join("\n      ")
+
+  // 字号与位置通过 CSS 变量下发；未指定时用样式表里的默认值。
+  const coverStyles = [
+    fontSize.title ? `--cover-title-size:${fontSize.title};` : "",
+    fontSize.subtitle ? `--cover-subtitle-size:${fontSize.subtitle};` : "",
+    fontSize.meta ? `--cover-meta-size:${fontSize.meta};` : "",
+    position.logo ? `--cover-logo-top:${position.logo};` : "",
+    position.title ? `--cover-title-top:${position.title};` : "",
+    position.meta ? `--cover-meta-top:${position.meta};` : "",
+  ]
+    .filter(Boolean)
+    .join("")
+
+  return `<section class="export-cover${isDark ? " export-cover--dark" : ""}"${
+    coverStyles ? ` style="${escapeHtml(coverStyles)}"` : ""
+  }>
+  <div class="export-cover__bleed"${
+    bleedStyle ? ` style="${escapeHtml(bleedStyle)}"` : ""
+  } aria-hidden="true"></div>
+  <div class="export-cover__frame">
+    ${
+      logo
+        ? `<header class="export-cover__top">
+      <img class="export-cover__logo" src="${escapeHtml(logo)}" alt=""${
+        logoWidth ? ` style="width:${logoWidth}"` : ""
+      } />
+    </header>`
+        : ""
+    }
+    <div class="export-cover__main">
+      <h1 class="export-cover__title">${escapeHtml(title)}</h1>
+      ${subtitle ? `<p class="export-cover__subtitle">${escapeHtml(subtitle)}</p>` : ""}
+    </div>
+    <footer class="export-cover__bottom">
+      ${metaHtml}
+    </footer>
   </div>
 </section>`
+}
+
+/**
+ * 页眉页脚。
+ *
+ * 用 @page 的边距盒实现，而不是 page.pdf({ displayHeaderFooter })：
+ * 后者的页眉页脚会画在每一页上、无法按页关闭，而封面要求没有页眉页脚。
+ * 边距盒配合 @page :first 就能做到——封面页边距为 0 且清空边距盒内容，
+ * 正文页正常显示，且 counter(pages) 给出的是全书总页数。
+ */
+function buildPageCss({ title, showHeaderFooter = true }) {
+  const headerLine = title
+    ? `@top-left { content: "${cssString(title)}"; font-size: 8px; color: #a1a1aa; letter-spacing: 0.02em; }`
+    : ""
+
+  if (!showHeaderFooter) {
+    return `@page { size: A4; margin: 20mm 16mm 18mm; }`
+  }
+
+  return `@page {
+  size: A4;
+  margin: 20mm 16mm 18mm;
+  ${headerLine}
+  @bottom-center { content: "第 " counter(page) " 页 / 共 " counter(pages) " 页"; font-size: 8px; color: #a1a1aa; }
+}
+
+/* 封面页：零边距铺满整页，并清空边距盒，使其不带页眉页脚。 */
+@page :first {
+  margin: 0;
+  @top-left { content: none; }
+  @top-right { content: none; }
+  @bottom-left { content: none; }
+  @bottom-center { content: none; }
+  @bottom-right { content: none; }
+}`
 }
 
 /** 打印样式：只在导出的 PDF 里生效，站点本身不受影响。 */
@@ -434,31 +569,148 @@ const PRINT_CSS = `
 }
 `
 
-/** 封面与目录的排版样式（仅导出时注入）。 */
+/**
+ * 封面与目录的排版样式（仅导出时注入）。
+ *
+ * 封面用「满版背景 + 内边距框架」两层结构：外层负责铺满整页（含出血），
+ * 内层负责按安全边距摆放 logo、标题与版本信息。
+ */
 const LAYOUT_CSS = `
 #export-root { color: #18181b; }
 #export-root * { box-sizing: border-box; }
 
 .export-cover {
+  position: relative;
+  /* 封面页边距为 0，这里铺满整页；overflow 防止高度溢出多出一张空白页。 */
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #fff;
+  color: #18181b;
+}
+
+/*
+ * 背景图独占一层（内联 style 提供 background-image），
+ * 便于用不透明度调节深浅而不影响文字。默认不透明度为 1。
+ */
+.export-cover__bleed {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: var(--cover-bg-opacity, 1);
+  z-index: 0;
+}
+
+/*
+ * 封面三块内容（logo、标题块、信息区）都绝对定位，各自用 CSS 变量控制
+ * 距页面顶部的距离，值可写百分比或长度，位置互不影响、可自由摆放。
+ *
+ * 用绝对定位而非 flex 排布，是为了让参数值与最终位置一一对应：
+ * flex 下某个值还要叠加其它元素的高度，改一次量一次，很容易误判。
+ */
+.export-cover__frame {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  padding: 0 16mm;
+}
+
+.export-cover__top {
+  position: absolute;
+  top: var(--cover-logo-top, 5.4%);
+  right: 16mm;
+}
+.export-cover__logo { width: 48mm; height: auto; display: block; }
+
+.export-cover__main {
+  position: absolute;
+  top: var(--cover-title-top, 30%);
+  left: 16mm;
+  right: 16mm;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 60vh;
-  padding: 24mm 0 12mm;
+  gap: 10px;
 }
-.export-cover__brand { display: flex; flex-direction: column; gap: 4px; }
-.export-cover__brand-name { font-size: 20px; font-weight: 600; letter-spacing: 0.02em; }
-.export-cover__brand-tagline { font-size: 12px; color: #71717a; }
-.export-cover__main { display: flex; flex-direction: column; gap: 12px; }
-.export-cover__title { font-size: 42px; font-weight: 700; line-height: 1.25; margin: 0; }
-.export-cover__subtitle { font-size: 17px; color: #52525b; margin: 0; }
+
+.export-cover__title {
+  font-size: var(--cover-title-size, 36pt);
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.export-cover__subtitle {
+  font-size: var(--cover-subtitle-size, 12pt);
+  line-height: 1.5;
+  color: #52525b;
+  margin: 0;
+  max-width: 34em;
+}
+
+/*
+ * 左下信息区：各字段横向排成一行，字段内部 label 在上、value 在下，
+ * 与封面上的 logo、标题一起构成左上/中部/左下三区。
+ */
+.export-cover__bottom {
+  position: absolute;
+  top: var(--cover-meta-top, 92%);
+  left: 16mm;
+  right: 16mm;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8mm 12mm;
+}
+
 .export-cover__meta {
   display: flex;
-  gap: 24px;
-  padding-top: 12px;
-  border-top: 1px solid #d4d4d8;
-  font-size: 12px;
-  color: #71717a;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+/* label 小号、拉开字距，与 value 形成明显层级。 */
+/* 信息区：label 随 value 等比缩放（默认 14px 对应 label 约 9px）。 */
+.export-cover__meta-label {
+  font-size: calc(var(--cover-meta-size, 14px) * 0.64);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: #8a8f98;
+}
+
+.export-cover__meta-value {
+  font-size: var(--cover-meta-size, 14px);
+  font-weight: 600;
+  line-height: 1.3;
+  color: #27272a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 备注较长，给一个宽度上限让它换行；不能用 flex:1 撑开，
+   否则会把后面的字段推到页面最右侧。 */
+.export-cover__meta--note {
+  max-width: 34%;
+}
+.export-cover__meta--note .export-cover__meta-value {
+  font-weight: 500;
+  color: #52525b;
+}
+
+/*
+ * 深色背景：文字与分隔线换成浅色。
+ * 由服务端根据背景图亮度自动加上 export-cover--dark，
+ * 也可以显式指定（CLI 的 --cover-theme dark）。
+ */
+.export-cover--dark {
+  color: #fafafa;
+}
+.export-cover--dark .export-cover__subtitle { color: #d4d4d8; }
+.export-cover--dark .export-cover__meta-label { color: rgba(255, 255, 255, 0.66); }
+.export-cover--dark .export-cover__meta-value { color: #fafafa; }
+.export-cover--dark .export-cover__meta--note .export-cover__meta-value {
+  color: #d4d4d8;
 }
 
 .export-toc__heading { font-size: 26px; font-weight: 700; margin: 0 0 20px; }
@@ -493,6 +745,259 @@ export function resolveBrowser() {
     )
   }
   return found
+}
+
+const IMAGE_MIME = {
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".svg": "image/svg+xml",
+  ".avif": "image/avif",
+}
+
+/**
+ * 把封面用到的图片解析成可直接嵌入的地址。
+ *
+ * 支持三种写法：
+ *   - http(s):// 或 data: 原样使用；
+ *   - 站点资源路径（如 /assets/logo.png），转成站点绝对地址，由浏览器加载；
+ *   - 本地文件路径，读成 data URL 内联，这样换台机器或站点没跑也能出图。
+ *
+ * 相对路径按项目根目录解析，便于命令行里直接写 public 下的文件。
+ */
+async function resolveImageRef(input, { baseUrl, label }) {
+  const value = String(input ?? "").trim()
+  if (!value) {
+    return ""
+  }
+
+  if (/^(https?:|data:)/i.test(value)) {
+    return value
+  }
+
+  // 先看磁盘上是否真有这个文件。
+  // 绝对路径（/tmp/bg.png）与站内路径（/assets/logo.png）都以 / 开头，
+  // 因此必须以“文件是否存在”来区分，否则绝对路径会被当成站内路径取成 404。
+  const filePath = path.resolve(value)
+  let buffer = null
+  if (existsSync(filePath)) {
+    buffer = await readFile(filePath)
+  }
+
+  if (buffer === null) {
+    // 磁盘上没有这个文件；以 / 开头的按站内路径交给浏览器取，
+    // 其余情况视为路径写错，直接报出来比默默出一张白图好。
+    if (value.startsWith("/")) {
+      return new URL(value, baseUrl).href
+    }
+    throw new Error(`${label}读取失败：找不到文件 ${filePath}`)
+  }
+
+  const mime = IMAGE_MIME[path.extname(filePath).toLowerCase()]
+  if (!mime) {
+    throw new Error(
+      `${label}格式不支持：${filePath}（可用 png/jpg/webp/gif/svg/avif）`,
+    )
+  }
+
+  return `data:${mime};base64,${buffer.toString("base64")}`
+}
+
+/**
+ * 判断背景图整体偏深还是偏浅，用于自动切换封面文字与 logo 的配色。
+ *
+ * 用 sharp 读均色（已是依赖，不额外引入）。取不到就返回 null，
+ * 由调用方回退到浅色背景的默认配色，不影响出图。
+ */
+/**
+ * 判断背景图整体偏深还是偏浅，用于自动切换封面文字与 logo 的配色。
+ *
+ * 用 sharp 读均色（已是依赖，不额外引入）。支持本地文件、网址与 data URL；
+ * 任何一步失败都返回 null，由调用方回退到浅色背景的默认配色，不影响出图。
+ */
+async function detectBackgroundTone(value) {
+  try {
+    const { default: sharp } = await import("sharp")
+    const input = await readImageForTone(value)
+    if (!input) {
+      return null
+    }
+
+    const { channels } = await sharp(input)
+      .resize(8, 8, { fit: "fill" })
+      .stats()
+    const [r, g, b] = channels.map((channel) => channel.mean)
+
+    // 相对亮度（sRGB 近似），0 为黑、255 为白。
+    const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    return luminance < 140 ? "dark" : "light"
+  } catch {
+    return null
+  }
+}
+
+/** 把背景图取成 sharp 能吃的输入（路径或 Buffer）；取不到返回 null。 */
+async function readImageForTone(value) {
+  // 网址：取回字节再判断，否则远程深色背景会回退成深色文字而看不清。
+  if (/^https?:/i.test(value)) {
+    const response = await fetch(value, {
+      signal: AbortSignal.timeout(10_000),
+    })
+    if (!response.ok) {
+      return null
+    }
+    const buffer = Buffer.from(await response.arrayBuffer())
+    // 只取前 12MB 判断色调足够了，避免拉一个巨大的图。
+    return buffer.subarray(0, 12 * 1024 * 1024)
+  }
+
+  if (value.startsWith("data:")) {
+    const comma = value.indexOf(",")
+    if (comma < 0) {
+      return null
+    }
+    const meta = value.slice(5, comma)
+    const payload = value.slice(comma + 1)
+    return meta.includes("base64")
+      ? Buffer.from(payload, "base64")
+      : Buffer.from(decodeURIComponent(payload), "utf8")
+  }
+
+  const filePath = path.resolve(value)
+  if (!existsSync(filePath)) {
+    return null
+  }
+  return filePath
+}
+
+/**
+ * 归一化封面配置：解析图片、换算透明度、兜底默认 logo。
+ *
+ * logo 的取值语义：
+ *   - showLogo 为 false      → 不要 logo；
+ *   - logo 为空或未提供      → 用默认的 GrapeCity 标识；
+ *   - logo 为路径/网址       → 用该图片。
+ * 之所以用独立的 showLogo 而不是拿空串表示“不要”，是因为空串同样是
+ * “用户没填”的常见形态，两者混在一起会让默认 logo 永远出不来。
+ */
+async function resolveCoverAssets(cover, { baseUrl }) {
+  const { version, note, logoWidth, backgroundOpacity } = cover
+
+  // 先看背景深浅：深色背景要改用白色版 logo 与浅色文字，否则看不清。
+  const tone = cover.background
+    ? await detectBackgroundTone(cover.background)
+    : null
+  const isDark =
+    cover.theme === "dark" || (cover.theme !== "light" && tone === "dark")
+
+  // 未显式指定 logo 时，按背景深浅自动挑浅色版或深色版标识。
+  const defaultLogo = isDark
+    ? DEFAULT_COVER_LOGO.replace("-light.", "-dark.")
+    : DEFAULT_COVER_LOGO
+  const logoPath =
+    typeof cover.logo === "string" && cover.logo.trim()
+      ? cover.logo
+      : defaultLogo
+
+  const logo =
+    cover.showLogo === false
+      ? ""
+      : await resolveImageRef(logoPath, { baseUrl, label: "封面 logo " })
+
+  const background = cover.background
+    ? await resolveImageRef(cover.background, {
+        baseUrl,
+        label: "封面背景图 ",
+      })
+    : ""
+
+  let opacity
+  if (
+    backgroundOpacity !== undefined &&
+    backgroundOpacity !== null &&
+    backgroundOpacity !== ""
+  ) {
+    const parsed = Number(backgroundOpacity)
+    if (Number.isNaN(parsed) || parsed < 0 || parsed > 1) {
+      throw new Error("封面背景图不透明度需在 0 到 1 之间")
+    }
+    opacity = parsed
+  }
+
+  return {
+    logo,
+    logoWidth,
+    background,
+    backgroundOpacity: opacity,
+    isDark,
+    version,
+    note,
+    fontSize: normalizeFontSizes(cover.fontSize),
+    position: {
+      logo: normalizePosition(cover.position?.logo, "Logo 位置"),
+      title: normalizePosition(cover.position?.title, "主标题位置"),
+      meta: normalizePosition(cover.position?.meta, "信息区位置"),
+    },
+  }
+}
+
+/** 尺寸只允许「数字 + 可选单位」，避免把任意字符串拼进内联样式。 */
+const CSS_LENGTH_PATTERN = /^\d+(\.\d+)?(pt|px|mm|cm|in|em|rem|%)?$/
+const BARE_NUMBER_PATTERN = /^\d+(\.\d+)?$/
+
+/**
+ * 校验一个 CSS 长度值。
+ * 允许纯数字（按 defaultUnit 理解），也允许带单位；
+ * 非法值直接报错，而不是拼出一个无效的 CSS 值让它静默失效。
+ */
+function normalizeCssLength(raw, { defaultUnit, label }) {
+  if (raw === undefined || raw === null || String(raw).trim() === "") {
+    return ""
+  }
+
+  const value = String(raw).trim()
+  if (!CSS_LENGTH_PATTERN.test(value)) {
+    throw new Error(
+      `封面${label}取值无效：${value}（可写带单位的值，或只写数字默认按 ${defaultUnit}）`,
+    )
+  }
+
+  return BARE_NUMBER_PATTERN.test(value) ? `${value}${defaultUnit}` : value
+}
+
+/**
+ * 校验三个封面字号。只写数字时按 pt 处理，与 A4 印刷尺寸对应。
+ */
+function normalizeFontSizes(input) {
+  const source = input && typeof input === "object" ? input : {}
+  const result = {}
+
+  for (const field of ["title", "subtitle", "meta"]) {
+    const label = {
+      title: "主标题字号",
+      subtitle: "副标题字号",
+      meta: "信息区字号",
+    }[field]
+    const value = normalizeCssLength(source[field], {
+      defaultUnit: "pt",
+      label,
+    })
+    if (value) {
+      result[field] = value
+    }
+  }
+
+  return result
+}
+
+/**
+ * 校验封面元素的位置（距页面顶部的距离）。
+ * 只写数字时按 % 处理；不做范围限制，允许自行摆放（包括故意重叠）。
+ */
+function normalizePosition(raw, label) {
+  return normalizeCssLength(raw, { defaultUnit: "%", label })
 }
 
 /**
@@ -674,7 +1179,9 @@ export function createRenderer() {
 
     /**
      * 生成 PDF。
-     * @param config baseUrl / chapters / title / subtitle / date / toc / siteUrl
+     * @param config baseUrl / chapters / title / subtitle / version / date /
+     *               note / logo / logoWidth / background / backgroundOpacity /
+     *               toc / siteUrl
      * @param onProgress 进度回调，用于界面显示当前进度
      * @returns {Promise<Buffer>}
      */
@@ -688,6 +1195,9 @@ export function createRenderer() {
         toc = true,
         siteUrl = "",
       } = config
+
+      // 封面图片要在这里解析：本地文件读成 data URL，站内路径转成绝对地址。
+      const cover = await resolveCoverAssets(config.cover ?? {}, { baseUrl })
 
       const browser = await getBrowser()
       const page = await browser.newPage()
@@ -722,13 +1232,16 @@ export function createRenderer() {
           phase: "print",
           index: chapters.length,
           total: chapters.length,
+          // 把最终采用的封面配色带出去，便于命令行与界面显示，
+          // 免得自动判断变成一个看不见的黑盒。
+          coverTheme: cover.isDark ? "dark" : "light",
         })
 
         const root = `${buildCover({
           title,
           subtitle,
           date,
-          count: chapters.length,
+          ...cover,
         })}
 ${toc ? buildTableOfContents(chapters) : ""}
 ${chapterParts.join("\n")}`
@@ -740,8 +1253,34 @@ ${chapterParts.join("\n")}`
           document.body.className = ""
           document.body.innerHTML = `<div id="export-root">${html}</div>`
         }, root)
+
+        // 换完 DOM 立刻停掉页面脚本。
+        //
+        // 站点是 Next.js 应用，React 会在空闲时水合并按自己的虚拟 DOM
+        // 重写 body。抓取第一页时若该页仍在编译（dev 首次访问较慢），
+        // 水合就可能发生在我们替换之后，把整本手册覆盖回单个原始页面，
+        // 而且导出照样成功——静默产出错误的 PDF。禁用 JS 可根除该竞态；
+        // 样式表是外链、PDF 打印也不依赖脚本，因此不影响产物。
+        await page.setJavaScriptEnabled(false)
+
         await page.addStyleTag({ content: LAYOUT_CSS })
         await page.addStyleTag({ content: PRINT_CSS })
+        // 页眉页脚与封面页边距放在 @media print 之外，
+        // 确保 @page 规则被采用。
+        await page.addStyleTag({ content: buildPageCss({ title }) })
+
+        // 打印前自检：万一手册仍被覆盖，宁可报错也不要交出错误的 PDF。
+        const rootState = await page.evaluate(() => ({
+          hasRoot: !!document.getElementById("export-root"),
+          covers: document.querySelectorAll(".export-cover").length,
+          chapters: document.querySelectorAll(".export-chapter").length,
+        }))
+        if (!rootState.hasRoot || rootState.chapters !== chapters.length) {
+          throw new Error(
+            "手册内容在排版阶段被页面脚本覆盖，请重试；" +
+              "若持续失败，请重启本地站点（pnpm dev）。",
+          )
+        }
 
         await page.evaluate(async () => {
           await document.fonts.ready
@@ -769,35 +1308,40 @@ ${chapterParts.join("\n")}`
           )
         })
 
-        const headerTemplate = `<div style="width:100%;padding:0 16mm;font-size:8px;color:#a1a1aa;font-family:'PingFang SC','Hiragino Sans GB',sans-serif;">
-      <span>${escapeHtml(title)}</span>
-    </div>`
-
-        const footerTemplate = `<div style="width:100%;padding:0 16mm;font-size:8px;color:#a1a1aa;text-align:center;font-family:'PingFang SC','Hiragino Sans GB',sans-serif;">
-      第 <span class="pageNumber"></span> 页 / 共 <span class="totalPages"></span> 页
-    </div>`
-
         // PDF 的标题取 document.title；Next.js 会在水合时改写它，
         // 所以放到打印前一刻设置。
         await page.evaluate((value) => {
           document.title = value
         }, title)
 
+        // 排查封面/排版问题时可用 MANUAL_DEBUG=<png 路径> 抓一张打印视图。
+        if (process.env.MANUAL_DEBUG) {
+          await page.emulateMediaType("print")
+          await page.screenshot({ path: process.env.MANUAL_DEBUG })
+          const state = await page.evaluate(() => {
+            const bleed = document.querySelector(".export-cover__bleed")
+            const logo = document.querySelector(".export-cover__logo")
+            return {
+              covers: document.querySelectorAll(".export-cover").length,
+              chapters: document.querySelectorAll(".export-chapter").length,
+              background: bleed
+                ? getComputedStyle(bleed).backgroundImage.slice(0, 40)
+                : null,
+              logoLoaded: logo ? logo.complete && logo.naturalWidth > 0 : null,
+            }
+          })
+          process.stderr.write(`[debug] ${JSON.stringify(state)}\n`)
+        }
+
+        // 不使用 displayHeaderFooter：它的页眉页脚会画在每一页且无法按页关闭。
+        // 页眉页脚与页面边距由上面的 @page 规则提供。
         return await page.pdf({
           format: "A4",
           printBackground: true,
           // 让 Chrome 依据标题生成 PDF 书签，便于在阅读器里跳转。
           outline: true,
           tagged: true,
-          displayHeaderFooter: true,
-          headerTemplate,
-          footerTemplate,
-          margin: {
-            top: "20mm",
-            bottom: "18mm",
-            left: "16mm",
-            right: "16mm",
-          },
+          preferCSSPageSize: true,
         })
       } finally {
         await page.close()

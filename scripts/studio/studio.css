@@ -565,7 +565,8 @@ input[type="checkbox"] {
   font-size: 11px;
 }
 
-.field input {
+/* 只让文本框占满整行；复选框保持原始尺寸，否则会把后面的文字挤出可视区。 */
+.field input:not([type="checkbox"]) {
   width: 100%;
 }
 
@@ -581,6 +582,96 @@ input[type="checkbox"] {
   font-size: 12px;
   color: var(--text);
   white-space: nowrap;
+}
+
+/* ------------------------------------------------------ 封面设置折叠组 */
+
+.group {
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fcfcfd;
+}
+
+.group > summary {
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3f3f46;
+  list-style: none;
+}
+
+.group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.group > summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1em;
+  color: var(--text-soft);
+  transition: transform 0.12s ease;
+}
+
+.group[open] > summary::before {
+  content: "▾";
+}
+
+.group__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 10px 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* 路径输入框与「选择文件」按钮并排。 */
+.file-field {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.file-field input {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-field .btn {
+  flex: none;
+}
+
+/* 图片字段下方的状态提示与缩略图。 */
+.file-note {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.file-note--error {
+  color: var(--danger);
+}
+
+.thumb {
+  margin-top: 6px;
+  max-width: 150px;
+  max-height: 56px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #fff;
+  object-fit: contain;
+  align-self: flex-start;
+}
+
+/* 背景图通常是竖版大图，缩略图给一个固定比例框，便于比较。 */
+.thumb--wide {
+  width: 96px;
+  height: 128px;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
 }
 
 .progress {

@@ -26,11 +26,33 @@ const ui = {
   presetMenu: el("presetMenu"),
   presetSave: el("presetSave"),
   presetDelete: el("presetDelete"),
+  presetExport: el("presetExport"),
+  presetImport: el("presetImport"),
+  presetPicker: el("presetPicker"),
   title: el("title"),
   subtitle: el("subtitle"),
   date: el("date"),
   toc: el("toc"),
   siteUrl: el("siteUrl"),
+  version: el("version"),
+  note: el("note"),
+  showLogo: el("showLogo"),
+  logo: el("logo"),
+  logoWidth: el("logoWidth"),
+  coverBg: el("coverBg"),
+  coverBgOpacity: el("coverBgOpacity"),
+  coverTheme: el("coverTheme"),
+  fontTitle: el("fontTitle"),
+  fontSubtitle: el("fontSubtitle"),
+  fontMeta: el("fontMeta"),
+  positionLogo: el("positionLogo"),
+  positionTitle: el("positionTitle"),
+  positionMeta: el("positionMeta"),
+  logoPreview: el("logoPreview"),
+  logoNote: el("logoNote"),
+  coverBgPreview: el("coverBgPreview"),
+  coverBgNote: el("coverBgNote"),
+  filePicker: el("filePicker"),
   preview: el("preview"),
   download: el("download"),
   progress: el("progress"),
@@ -95,7 +117,51 @@ function currentConfig() {
     date: ui.date.value.trim() || today(),
     toc: ui.toc.checked,
     siteUrl: ui.siteUrl.value.trim().replace(/\/+$/, ""),
+    cover: {
+      version: ui.version.value.trim(),
+      note: ui.note.value.trim(),
+      // 空 logo 字段表示“用默认标识”，是否显示由独立的开关决定。
+      showLogo: ui.showLogo.checked,
+      logo: ui.logo.value.trim(),
+      logoWidth: ui.logoWidth.value.trim(),
+      background: ui.coverBg.value.trim(),
+      backgroundOpacity: ui.coverBgOpacity.value.trim(),
+      theme: ui.coverTheme.value,
+      fontSize: {
+        title: ui.fontTitle.value.trim(),
+        subtitle: ui.fontSubtitle.value.trim(),
+        meta: ui.fontMeta.value.trim(),
+      },
+      position: {
+        logo: ui.positionLogo.value.trim(),
+        title: ui.positionTitle.value.trim(),
+        meta: ui.positionMeta.value.trim(),
+      },
+    },
   }
+}
+
+/** 把封面字段写回表单，用于载入预设。 */
+function applyCoverFields(cover = {}) {
+  ui.version.value = cover.version ?? ""
+  ui.note.value = cover.note ?? ""
+  // 旧预设没有 showLogo 字段，按显示处理。
+  ui.showLogo.checked = cover.showLogo !== false
+  ui.logo.value = cover.logo ?? ""
+  ui.logoWidth.value = cover.logoWidth ?? ""
+  ui.coverBg.value = cover.background ?? ""
+  ui.coverBgOpacity.value = cover.backgroundOpacity ?? ""
+  ui.coverTheme.value = cover.theme ?? "auto"
+
+  // 旧预设没有 fontSize，留空即用样式表里的默认字号。
+  const fontSize = cover.fontSize ?? {}
+  ui.fontTitle.value = fontSize.title ?? ""
+  ui.fontSubtitle.value = fontSize.subtitle ?? ""
+  ui.fontMeta.value = fontSize.meta ?? ""
+  const position = cover.position ?? {}
+  ui.positionLogo.value = position.logo ?? ""
+  ui.positionTitle.value = position.title ?? ""
+  ui.positionMeta.value = position.meta ?? ""
 }
 
 const configKey = (config) => JSON.stringify(config)
@@ -617,6 +683,8 @@ function applyPreset(preset) {
   ui.subtitle.value = preset.subtitle ?? ""
   ui.toc.checked = preset.toc !== false
   ui.siteUrl.value = preset.siteUrl ?? ""
+  applyCoverFields(preset.cover)
+  refreshImageHints()
 
   syncCheckboxes()
   renderSelected()
@@ -679,6 +747,7 @@ ui.presetSave.addEventListener("click", async () => {
     subtitle: config.subtitle,
     toc: config.toc,
     siteUrl: config.siteUrl,
+    cover: config.cover,
   }
 
   const existing = state.presets.findIndex((item) => item.name === name)
@@ -783,6 +852,12 @@ function waitForJob(jobId) {
           setProgress(
             `抓取 ${payload.index}/${payload.total}：${payload.title}`,
           )
+        } else if (payload.coverTheme && ui.coverTheme.value === "auto") {
+          setProgress(
+            payload.coverTheme === "dark"
+              ? "背景偏深，封面改用浅色文字"
+              : "背景偏浅，封面使用深色文字",
+          )
         } else {
           setProgress("正在排版并生成 PDF…")
         }
@@ -793,6 +868,9 @@ function waitForJob(jobId) {
         }
         if (payload.size) {
           parts.push(formatSize(payload.size))
+        }
+        if (payload.cached) {
+          parts.push("复用上次结果")
         }
         setProgress(
           `完成：${payload.title || "手册"}${parts.length ? `（${parts.join("，")}）` : ""}`,
@@ -889,6 +967,192 @@ async function downloadPdf() {
   }
 }
 
+/* ------------------------------------------------------------ 封面图片选择 */
+
+/**
+ * 「选择文件」按钮：把本地图片交给服务端落到 .manual-studio/assets/，
+ * 再把相对路径填进输入框。这样输入框里始终是一个可读、可复用的路径，
+ * 而不是一长串 base64。
+ */
+let pickTarget = ""
+
+for (const button of document.querySelectorAll("[data-pick]")) {
+  button.addEventListener("click", () => {
+    pickTarget = button.dataset.pick
+    ui.filePicker.value = ""
+    ui.filePicker.click()
+  })
+}
+
+ui.filePicker.addEventListener("change", async () => {
+  const file = ui.filePicker.files?.[0]
+  if (!file || !pickTarget) {
+    return
+  }
+
+  setProgress(`正在保存 ${file.name}…`)
+  try {
+    const response = await fetch(
+      `/api/upload?name=${encodeURIComponent(file.name)}`,
+      {
+        method: "POST",
+        // 带上文件自身的类型；拿不到时服务端会按文件内容判断。
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+        },
+        body: file,
+      },
+    )
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.error || `HTTP ${response.status}`)
+    }
+    document.getElementById(pickTarget).value = data.path
+    refreshImageHints()
+    setProgress(
+      data.deduped
+        ? `已选用 ${file.name}（与已有图片相同，直接复用）`
+        : `已选用 ${file.name}`,
+    )
+  } catch (error) {
+    setProgress(`图片保存失败：${error.message}`, "error")
+  }
+})
+
+/**
+ * 刷新两个图片字段的缩略图与状态提示。
+ *
+ * 缩略图让「当前到底用的是哪张图」一目了然；文件不存在时直接标出来，
+ * 而不是等到渲染才报错。
+ */
+async function refreshImageHints() {
+  await Promise.all([
+    updateImageField({
+      input: ui.logo,
+      preview: ui.logoPreview,
+      note: ui.logoNote,
+      emptyHint: "留空使用默认 GrapeCity 标识",
+    }),
+    updateImageField({
+      input: ui.coverBg,
+      preview: ui.coverBgPreview,
+      note: ui.coverBgNote,
+      emptyHint: "留空则纯白背景",
+    }),
+  ])
+}
+
+async function updateImageField({ input, preview, note, emptyHint }) {
+  const value = input.value.trim()
+
+  if (!value) {
+    preview.hidden = true
+    preview.removeAttribute("src")
+    note.hidden = true
+    note.textContent = ""
+    note.className = "file-note"
+    return
+  }
+
+  // 网址直接交给浏览器加载，本地路径走服务端读取接口。
+  const src = /^(https?:|data:)/i.test(value)
+    ? value
+    : `/api/assets/${encodeURIComponent(basename(value))}`
+
+  const status = await probeImage(src)
+  if (status.ok) {
+    preview.src = src
+    preview.hidden = false
+    note.hidden = false
+    note.className = "file-note"
+    note.textContent = describeImage(value, status)
+  } else {
+    preview.hidden = true
+    preview.removeAttribute("src")
+    note.hidden = false
+    note.className = "file-note file-note--error"
+    note.textContent =
+      value.startsWith("/") || /^https?:/i.test(value)
+        ? `无法加载：${value}`
+        : `找不到文件：${value}${emptyHint ? `（${emptyHint}）` : ""}`
+  }
+}
+
+function basename(value) {
+  return value.split(/[\\/]/).pop() ?? value
+}
+
+function describeImage(value, status) {
+  const size =
+    status.width && status.height ? `${status.width}×${status.height}` : ""
+  const isAsset = value.includes(".manual-studio/assets/")
+  const parts = [isAsset ? "已保存到工作目录" : "外部引用", size].filter(
+    Boolean,
+  )
+  return parts.join(" · ")
+}
+
+/** 探测图片能否加载，拿到原始尺寸用于提示。 */
+function probeImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () =>
+      resolve({ ok: true, width: img.naturalWidth, height: img.naturalHeight })
+    img.onerror = () => resolve({ ok: false })
+    img.src = src
+  })
+}
+
+/* ------------------------------------------------------------ 预设导出导入 */
+
+ui.presetExport.addEventListener("click", async () => {
+  if (state.presets.length === 0) {
+    setProgress("还没有预设可以导出。", "error")
+    return
+  }
+
+  // 服务端会把引用的图片内联进 JSON，导出的文件是自包含的备份。
+  const anchor = document.createElement("a")
+  anchor.href = "/api/presets/export"
+  anchor.download = ""
+  document.body.append(anchor)
+  anchor.click()
+  anchor.remove()
+  setProgress(`已导出 ${state.presets.length} 个预设（图片已内嵌）`)
+})
+
+ui.presetImport.addEventListener("click", () => {
+  ui.presetPicker.value = ""
+  ui.presetPicker.click()
+})
+
+ui.presetPicker.addEventListener("change", async () => {
+  const file = ui.presetPicker.files?.[0]
+  if (!file) {
+    return
+  }
+
+  setProgress(`正在导入 ${file.name}…`)
+  try {
+    const text = await file.text()
+    const response = await fetch("/api/presets/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: text,
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      throw new Error(data.error || `HTTP ${response.status}`)
+    }
+
+    state.presets = Array.isArray(data.presets) ? data.presets : []
+    renderPresets()
+    setProgress(`已导入 ${data.imported} 个预设`)
+  } catch (error) {
+    setProgress(`导入失败：${error.message}`, "error")
+  }
+})
+
 /* ---------------------------------------------------------------- 启动 */
 
 ui.preview.addEventListener("click", showPreview)
@@ -903,6 +1167,12 @@ function init() {
     localStorage.getItem("manual-studio:baseUrl") ||
     window.location.origin.replace(/:\d+$/, ":3000")
 
+  // 手动改路径后也要刷新缩略图与存在性提示。
+  for (const input of [ui.logo, ui.coverBg]) {
+    input.addEventListener("change", refreshImageHints)
+  }
+
+  refreshImageHints()
   loadPresets()
   loadDocs()
 }

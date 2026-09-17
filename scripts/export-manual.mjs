@@ -38,19 +38,41 @@ const HELP = `
   选中目录时，其下所有页面按站点侧边栏顺序一并导出。
 
 选项：
-  --title <文本>     手册标题（默认按所选文档推导）
-  --subtitle <文本>  封面副标题
-  --out <路径>       输出文件（默认 manuals/<标题>-<日期>.pdf）
-  --base-url <地址>  站点地址（默认 ${DEFAULT_BASE_URL}）
-  --site-url <地址>  把文档内指向站点的链接改写成该地址；不填则去掉链接只留文字
-  --date <文本>      封面日期（默认今天，格式 YYYY-MM-DD）
-  --no-toc           不生成目录页
-  --list             列出站点上所有可导出的文档后退出
-  -h, --help         显示本帮助
+  --title <文本>       手册标题（默认按所选文档推导）
+  --subtitle <文本>    封面副标题
+  --version <文本>     封面左下显示的版本，如 v1.0
+  --note <文本>        封面左下附带的一行说明，如「内部资料，请勿外传」
+  --logo <路径|网址>   封面右上 logo；默认 GrapeCity 标识
+  --no-logo            去掉封面 logo
+  --logo-width <长度>  logo 宽度（默认 42mm，可写 40px 等）
+  --cover-bg <路径|网址>  封面背景图，铺满整页
+  --cover-bg-opacity <0-1> 背景图不透明度，用于把背景调淡
+  --cover-theme <light|dark|auto>  封面文字配色（默认 auto：按背景图亮度判断）
+  --font-title <尺寸>     主标题字号（默认 36pt）
+  --font-subtitle <尺寸>  副标题字号（默认 12pt）
+  --font-meta <尺寸>      信息区（版本/日期/备注）字号（默认 14px）
+                          尺寸可写 36pt、48px，只写数字时按 pt
+  --logo-top <位置>       logo 距页面顶部的距离（默认 5.4%）
+  --title-top <位置>      主标题块距页面顶部的距离（默认 30%）
+  --meta-top <位置>       信息区距页面顶部的距离（默认 92%）
+                          位置可写 28%、90mm，只写数字时按 %；
+                          不做范围限制，可按需要自行摆放
+  --out <路径>         输出文件（默认 manuals/<标题>-<日期>.pdf）
+  --base-url <地址>    站点地址（默认 ${DEFAULT_BASE_URL}）
+  --site-url <地址>    把文档内指向站点的链接改写成该地址；不填则去掉链接只留文字
+  --date <文本>        封面日期（默认今天，格式 YYYY-MM-DD）
+  --no-toc             不生成目录页
+  --list               列出站点上所有可导出的文档后退出
+  -h, --help           显示本帮助
+
+封面图片可以写本地文件路径（相对项目根目录，会内联进 PDF）、
+站内路径（如 /assets/xxx.png，从运行中的站点读取）或 http(s) 网址。
 
 示例：
   node scripts/export-manual.mjs solutions/offline-form
   node scripts/export-manual.mjs standards/arch --title "架构设计手册" --site-url https://fgclibrary.cn
+  node scripts/export-manual.mjs standards/arch --version v1.0 --note "内部资料，请勿外传"
+  node scripts/export-manual.mjs standards/arch --cover-bg public/images/cover.png --cover-bg-opacity 0.25
 `
 
 function fail(message) {
@@ -64,6 +86,20 @@ function parseArgs(argv) {
     siteUrl: "",
     title: "",
     subtitle: "",
+    version: "",
+    note: "",
+    logo: undefined,
+    showLogo: true,
+    logoWidth: "",
+    coverBg: "",
+    coverBgOpacity: "",
+    coverTheme: "auto",
+    fontSizeTitle: "",
+    fontSizeSubtitle: "",
+    fontSizeMeta: "",
+    positionLogo: "",
+    positionTitle: "",
+    positionMeta: "",
     out: "",
     date: new Date().toISOString().slice(0, 10),
     toc: true,
@@ -88,6 +124,38 @@ function parseArgs(argv) {
       options.list = true
     } else if (arg === "--no-toc") {
       options.toc = false
+    } else if (arg === "--version") {
+      options.version = next()
+    } else if (arg === "--note") {
+      options.note = next()
+    } else if (arg === "--logo") {
+      options.logo = next()
+    } else if (arg === "--no-logo") {
+      options.showLogo = false
+    } else if (arg === "--logo-width") {
+      options.logoWidth = next()
+    } else if (arg === "--cover-bg") {
+      options.coverBg = next()
+    } else if (arg === "--cover-bg-opacity") {
+      options.coverBgOpacity = next()
+    } else if (arg === "--cover-theme") {
+      const value = next()
+      if (!["light", "dark", "auto"].includes(value)) {
+        fail(`--cover-theme 只能是 light、dark 或 auto，收到“${value}”`)
+      }
+      options.coverTheme = value
+    } else if (arg === "--font-title") {
+      options.fontSizeTitle = next()
+    } else if (arg === "--font-subtitle") {
+      options.fontSizeSubtitle = next()
+    } else if (arg === "--font-meta") {
+      options.fontSizeMeta = next()
+    } else if (arg === "--logo-top") {
+      options.positionLogo = next()
+    } else if (arg === "--title-top") {
+      options.positionTitle = next()
+    } else if (arg === "--meta-top") {
+      options.positionMeta = next()
     } else if (arg === "--title") {
       options.title = next()
     } else if (arg === "--subtitle") {
@@ -153,11 +221,36 @@ async function main() {
         date: options.date,
         toc: options.toc,
         siteUrl: options.siteUrl,
+        cover: {
+          version: options.version,
+          note: options.note,
+          showLogo: options.showLogo,
+          logo: options.logo,
+          logoWidth: options.logoWidth,
+          background: options.coverBg,
+          backgroundOpacity: options.coverBgOpacity,
+          theme: options.coverTheme,
+          fontSize: {
+            title: options.fontSizeTitle,
+            subtitle: options.fontSizeSubtitle,
+            meta: options.fontSizeMeta,
+          },
+          position: {
+            logo: options.positionLogo,
+            title: options.positionTitle,
+            meta: options.positionMeta,
+          },
+        },
       },
-      ({ phase, index, total, title: chapterTitle }) => {
+      ({ phase, index, total, title: chapterTitle, coverTheme }) => {
         if (phase === "fetch") {
           process.stdout.write(
             `  [${String(index).padStart(2, " ")}/${total}] ${chapterTitle}\n`,
+          )
+        } else if (coverTheme && options.coverTheme === "auto") {
+          // 说明自动配色判断的结果，便于核对；显式指定时无需赘述。
+          process.stdout.write(
+            `封面配色：${coverTheme === "dark" ? "深色背景（浅色文字）" : "浅色背景（深色文字）"}\n`,
           )
         }
       },
