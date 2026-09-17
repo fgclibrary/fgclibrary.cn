@@ -17,6 +17,7 @@
 
 # generated content
 /.source/
+/support/
 
 # production
 /build
