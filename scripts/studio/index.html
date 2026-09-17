@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>手册工坊 · 格言格语</title>
+    <link rel="stylesheet" href="/studio.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar__brand">
+        <strong>手册工坊</strong>
+        <span class="muted">把选定文档导出为一本 PDF</span>
+      </div>
+
+      <label class="inline-field">
+        <span class="muted">站点</span>
+        <input id="baseUrl" name="baseUrl" spellcheck="false" />
+      </label>
+
+      <button type="button" id="reload" class="btn btn--ghost">重新读取文档</button>
+      <span id="siteStatus" class="status" role="status"></span>
+    </header>
+
+    <main class="layout">
+      <!-- 左：文档树 -->
+      <section class="pane pane--tree">
+        <div class="pane__head">
+          <h2>文档 <span id="docCount" class="badge">—</span></h2>
+          <input id="filter" class="filter" placeholder="筛选标题或描述…" spellcheck="false" />
+          <div class="pane__actions">
+            <button type="button" id="expandAll" class="btn btn--tiny">展开</button>
+            <button type="button" id="collapseAll" class="btn btn--tiny">折叠</button>
+            <button type="button" id="clearAll" class="btn btn--tiny">清空已选</button>
+          </div>
+        </div>
+        <div id="tree" class="tree" role="tree" aria-label="文档目录"></div>
+      </section>
+
+      <!-- 右：已选与设置。中间一段可独立滚动，底部操作区始终可见。 -->
+      <section class="pane pane--select">
+        <div class="pane__head">
+          <h2>已选 <span id="selectedCount" class="badge">0</span></h2>
+
+          <div class="pane__actions">
+            <!-- 预设下拉用自定义实现：原生 select 的弹出层由浏览器/系统绘制，
+                 预设一多就可能超出窗口且没有滚动条，这里自己控制。 -->
+            <div class="preset" id="preset">
+              <button
+                type="button"
+                id="presetToggle"
+                class="preset__toggle"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+                <span id="presetLabel" class="preset__label">— 预设组合 —</span>
+                <span class="preset__caret" aria-hidden="true">▾</span>
+              </button>
+              <div
+                id="presetMenu"
+                class="preset__menu"
+                role="listbox"
+                aria-label="预设组合"
+                hidden
+              ></div>
+            </div>
+            <button type="button" id="presetSave" class="btn btn--tiny">保存预设</button>
+            <button type="button" id="presetDelete" class="btn btn--tiny">删除</button>
+          </div>
+        </div>
+
+        <div class="pane__scroll">
+          <p id="selectedHint" class="hint">
+            在左侧勾选文档。拖动右侧列表项可调整手册中的先后顺序。
+          </p>
+          <ol id="selected" class="selected" aria-label="已选文档顺序"></ol>
+
+          <div class="settings">
+            <label class="field">
+              <span>手册标题</span>
+              <input id="title" placeholder="留空则按所选文档自动推导" />
+            </label>
+            <label class="field">
+              <span>封面副标题</span>
+              <input id="subtitle" placeholder="可留空" />
+            </label>
+            <div class="settings__row">
+              <label class="field">
+                <span>封面日期</span>
+                <input id="date" />
+              </label>
+              <label class="field field--check">
+                <input type="checkbox" id="toc" checked />
+                <span>生成目录页</span>
+              </label>
+            </div>
+            <label class="field">
+              <span>站内链接前缀</span>
+              <input
+                id="siteUrl"
+                placeholder="留空则去掉站内链接，只留文字"
+                spellcheck="false"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div class="pane__foot">
+          <p id="progress" class="progress" role="status"></p>
+          <div class="pane__foot-buttons">
+            <button type="button" id="preview" class="btn btn--primary">
+              预览
+            </button>
+            <button type="button" id="download" class="btn">下载 PDF</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 预览弹窗：生成后在这里打开，不再占用常驻栏位 -->
+    <dialog id="previewDialog" class="dialog" aria-label="PDF 预览">
+      <div class="dialog__head">
+        <strong id="previewTitle" class="dialog__title">PDF 预览</strong>
+        <span id="previewMeta" class="muted"></span>
+        <span class="dialog__spacer"></span>
+        <button type="button" id="openTab" class="link link--button">
+          在新标签打开
+        </button>
+        <button type="button" id="downloadInDialog" class="btn btn--tiny">
+          下载
+        </button>
+        <button type="button" id="previewClose" class="btn btn--tiny">关闭</button>
+      </div>
+      <div class="dialog__body">
+        <iframe id="previewFrame" title="PDF 预览"></iframe>
+      </div>
+    </dialog>
+
+    <script type="module" src="/studio.js"></script>
+  </body>
+</html>

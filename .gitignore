@@ -32,6 +32,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# 导出的 PDF 手册
+/manuals/
+
+# 手册工坊的本地缓存与预设
+/.manual-studio/
+
 # env files
 .env*
 

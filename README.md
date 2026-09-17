@@ -12,6 +12,51 @@
 - **产品集成** — 活字格与 SpreadJS 等产品及外部系统的协作方式。
 - **插件与扩展** — 使用 Java 等技术扩展活字格服务端能力。
 
+## 导出 PDF 手册
+
+需要把部分文档整理成手册发给客户时，可在本地把选定文档合并导出为一份 PDF。
+提供两种方式，底层是同一套渲染管线，产物完全一致。
+
+两者都只在本机运行，不参与站点构建，也不改动站点代码与样式；
+生成 PDF 需要驱动浏览器，而站点是纯静态导出、运行时没有 Node，所以这一层必须留在本地。
+
+### 图形界面
+
+```bash
+pnpm dev            # 另开一个终端保持运行
+pnpm manual:studio  # 打开 http://127.0.0.1:4173
+```
+
+界面上可以：
+
+- 按整章勾选（自动收录其下全部页面），或展开到单页精确勾选；
+- 拖动「已选」列表调整手册中的章次顺序；
+- 保存常用的组合为预设，下次一键载入；
+- 填标题、副标题、封面日期等，点「生成预览」直接看最终 PDF，再「下载 PDF」。
+
+筛选框同时匹配标题与文档描述，可以按内容而非标题找文档。
+相同参数的重复预览走缓存，不会重新渲染。
+
+### 命令行
+
+```bash
+pnpm manual:export solutions/offline-form         # 产物在 manuals/
+pnpm manual:export standards/arch standards/dev/base --title "标准化手册"
+pnpm manual:export --list                          # 查看全部可导出的文档路径
+pnpm manual:export solutions/offline-form --help   # 查看全部选项
+```
+
+选中目录时按站点侧边栏顺序合并，多个路径按给出顺序排入手册。
+常用选项：`--title` 手册标题、`--subtitle` 封面副标题、`--out` 输出路径、
+`--site-url` 把文档内站内链接改写为线上地址（默认去掉链接只留文字）、`--no-toc` 不生成目录页。
+
+### 说明
+
+导出的是合并后的单本 PDF，含封面、目录、页眉页脚与 PDF 书签（阅读器侧边栏可跳转）。
+脚本默认使用本机已安装的 Chrome 或 Edge，不需要额外下载 Chromium；
+如安装在别处，可用 `CHROME_PATH` 指定。
+手册工坊的缓存与预设存放在 `.manual-studio/`，两者都不会提交到版本库。
+
 ## 反馈
 
 内容有误或希望补充，欢迎通过 [Issues](https://github.com/fgclibrary/fgclibrary.cn/issues) 反馈。
