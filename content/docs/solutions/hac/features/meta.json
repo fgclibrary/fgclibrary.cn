@@ -3,7 +3,6 @@
   "icon": "ScanLine",
   "description": "按设备能力和业务功能查找扫码、离线、定位、BLE、NFC 等说明",
   "pages": [
-    "index",
     "command-index",
     "biometric-authentication",
     "ble-device",
