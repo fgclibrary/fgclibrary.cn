@@ -9,7 +9,7 @@ export type SiteModule = {
 }
 
 export type SiteSolutionModule = {
-  id: "rbac" | "offline-form"
+  id: "rbac" | "hac" | "offline-form"
   title: string
   shortTitle: string
   /** 文档侧边栏用于匹配的目录段，如 solutions/rbac */
@@ -90,6 +90,16 @@ export const solutionModules: SiteSolutionModule[] = [
       "将用户、角色、组织与权限能力封装为可复用模块，为新应用提供一套清晰、可靠的权限基础。",
     docsHref: "/docs/solutions/rbac",
     docsLabel: "浏览 RBAC 文档",
+  },
+  {
+    id: "hac",
+    title: "HAC",
+    shortTitle: "HAC",
+    docRoot: "solutions/hac",
+    description:
+      "把活字格应用运行在 Android 手机、平板和工业 PDA 上，通过插件命令调用扫码、定位、拍摄、NFC、BLE 等设备能力，并按现场原则设计移动页面。",
+    docsHref: "/docs/solutions/hac",
+    docsLabel: "浏览 HAC 文档",
   },
   {
     id: "offline-form",

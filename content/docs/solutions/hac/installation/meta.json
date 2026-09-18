@@ -1,0 +1,6 @@
+{
+  "title": "安装与调试",
+  "icon": "Settings",
+  "description": "安装 HAC 与插件，完成配置、设备检查、调试和日志采集",
+  "pages": ["index", "app-personalization", "debugging", "logging"]
+}

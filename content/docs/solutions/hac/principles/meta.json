@@ -1,0 +1,13 @@
+{
+  "title": "原则与最佳实践",
+  "icon": "Ruler",
+  "description": "PDA 页面在现场环境中的任务、交互、可读性和稳定性原则",
+  "pages": [
+    "index",
+    "goals-scenarios",
+    "information-architecture",
+    "interaction-behavior",
+    "visual-perception",
+    "performance"
+  ]
+}

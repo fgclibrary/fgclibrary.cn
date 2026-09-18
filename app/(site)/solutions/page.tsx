@@ -33,6 +33,25 @@ const solutions = [
     },
   },
   {
+    title: "HAC",
+    description:
+      "把活字格应用运行在 Android 手机、平板和工业 PDA 上，通过插件命令调用扫码、定位、拍摄、NFC、BLE 等设备能力，并按现场环境设计移动页面。",
+    capabilities: [
+      "激光扫码、UHF / RFID 与物理按键监听",
+      "定位、NFC、BLE 与生物识别认证",
+      "拍照、录像、录音与本地文件处理",
+      "离线存储、PDF 预览、广播与 APP 交互",
+    ],
+    primaryLink: {
+      href: "/docs/solutions/hac",
+      label: "了解 HAC",
+    },
+    secondaryLink: {
+      href: "/docs/solutions/hac/installation",
+      label: "安装与配置",
+    },
+  },
+  {
     title: "HAC 离线填报",
     description:
       "让现场作业人员断网也能继续完成表单填报，恢复网络后把填报记录与附件安全回传到活字格。",

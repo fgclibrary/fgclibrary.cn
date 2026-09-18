@@ -1,0 +1,39 @@
+---
+title: 典型场景和功能
+description: HAC、PDA 设备能力和移动端功能的场景化速查入口。
+---
+
+本部分回答三个问题：当前设备能力是否适合业务、需要配置什么、页面遇到异常时下一步怎么恢复。
+
+## 选择功能
+
+| 目标 | 推荐入口 |
+| --- | --- |
+| 按命令名称查找说明页 | [命令索引](/docs/solutions/hac/features/command-index) |
+| 激光 / 二维扫码、UHF / RFID | [扫描](/docs/solutions/hac/features/scanner) |
+| 弱网、本地暂存和稍后提交 | [离线模式](/docs/solutions/hac/features/offline-model-hac) |
+| 定位、NFC、BLE、身份认证 | [定位](/docs/solutions/hac/features/gps-location-demo)、[读取 NFC 标签](/docs/solutions/hac/features/nfc-tag-reading)、[BLE 设备读写](/docs/solutions/hac/features/ble-device)、[生物识别认证](/docs/solutions/hac/features/biometric-authentication) |
+| 拍照、录像、录音和本地文件 | [拍摄](/docs/solutions/hac/features/camera-capture) |
+| 应用原生页、PDF、电话、震动和广播 | [APP 交互](/docs/solutions/hac/features/app-interaction) |
+| ActionBar、菜单和扫描头参数 | [个性化配置](/docs/solutions/hac/installation/app-personalization) |
+| 物理按键监听 | [物理按键监听](/docs/solutions/hac/features/physical-key-listening) |
+
+## 功能页的阅读顺序
+
+每个功能页尽量使用同一套结构：
+
+1. **适用场景**：判断设备能力是否适合当前任务；
+2. **使用前提**：确认 HAC、插件、权限、硬件和系统配置；
+3. **命令速查**：找到命令用途和返回结果；
+4. **推荐流程**：明确触发、焦点、成功反馈和下一步；
+5. **设计要点**：处理生命周期、状态、重复操作和安全边界；
+6. **异常处理**：提供重试、重扫、手动修正或备用流程。
+
+## 通用边界
+
+- 持续扫码、广播接收、BLE 订阅和物理按键监听离开页面时必须停止；
+- 页面必须区分“本地已保存”“待补传”和“已提交到服务端”；
+- 配置类操作放在运维或管理员入口，普通操作员只看到业务流程；
+- 普通浏览器无法调用 HAC 的 Android 能力，应隐藏入口或明确提示运行环境。
+
+完整业务流程可参考[典型解决方案](/docs/solutions/hac)；页面布局、触控和性能原则见[原则与最佳实践](/docs/solutions/hac/principles)。

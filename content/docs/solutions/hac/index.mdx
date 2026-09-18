@@ -1,0 +1,52 @@
+---
+title: 介绍
+description: 活字格 Android 容器（HAC）的入门、安装、设备能力、典型方案和 PDA 页面设计原则。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout'
+
+HAC 的全称是 **Huozige Android Container**，即活字格 Android 容器。可以把它理解为安装在运行 Android 8.0 及以上版本的手机、平板或工业 PDA 上的「运行壳」：它负责打开活字格 Web 应用，并在页面与设备硬件之间建立连接。
+
+因此，页面不仅能完成普通 Web 页面能做的展示、录入和提交，还能在已配置和授权的设备上调用扫码头、定位、相机、NFC、BLE 和物理按键等能力。HAC 本身不承载业务规则或业务数据；这些仍由活字格应用处理，HAC 负责提供 Android 运行环境和设备能力桥接。
+
+![HAC 整体工作关系图](/images/hac/hac-overview.svg)
+
+## 模块组成
+
+| 组成部分 | 作用 |
+| --- | --- |
+| HAC 应用 | 设备上的 Android 容器，通过 WebView 打开活字格应用并提供设备能力桥接。 |
+| 交互命令插件 | 在活字格设计器中安装，向页面提供扫码、定位、离线、拍摄等设备交互命令。 |
+| 活字格应用 | 承载业务页面、业务规则和业务数据；页面通过插件命令调用设备能力。 |
+| Android 与 PDA 硬件 | 提供系统权限、WebView 以及扫码头、UHF、NFC、BLE 等物理能力。 |
+
+插件决定页面可以使用哪些交互命令，Android 系统权限和设备厂商配置决定这些命令能否真正执行。HAC、插件、WebView、Android 版本和 PDA 型号需要作为一个整体进行兼容性验证。
+
+## 文档导航
+
+| 部分 | 内容 | 入口 |
+| --- | --- | --- |
+| HAC 入门 | HAC 是什么、能做什么、与普通浏览器的边界和常用术语。 | [HAC 入门](/docs/solutions/hac/introduction) |
+| 安装与调试 | 下载 HAC 和插件，完成配置、设备检查、调试和日志采集。 | [安装与配置](/docs/solutions/hac/installation) |
+| 功能用法 | 按设备能力和业务功能查找扫码、离线、定位、BLE、NFC 等说明。 | [典型场景和功能](/docs/solutions/hac/features) |
+| 原则与最佳实践 | 学习 PDA 页面在现场环境中的任务、交互、可读性和稳定性原则。 | [原则总览](/docs/solutions/hac/principles) |
+
+## 阅读方法
+
+1. 先确认角色、设备、网络和业务边界；
+2. 再看页面如何组织任务、对象、数量和下一步操作；
+3. 对照 HAC 功能页确认扫码、离线、拍摄或其他设备能力的配置；
+4. 最后按验收标准在目标 PDA 和 HAC 中验证主流程与异常流程。
+
+方案可以按巡检、资产盘点、门店收货、BLE 设备采集或拍照取证等业务场景继续扩展。
+
+<Callout>
+HAC 是通用能力的容器，不包含具体业务。离线数据的主键、幂等提交、补传和冲突处理仍需要由业务页面设计，相关做法可参考 [HAC 离线填报](/docs/solutions/offline-form)。
+</Callout>
+
+## 下一步
+
+- 第一次了解 HAC：[HAC 入门](/docs/solutions/hac/introduction)
+- 下载并配置应用：[安装与配置](/docs/solutions/hac/installation)
+- 查找插件命令或设备能力：[典型场景和功能](/docs/solutions/hac/features)
+- 设计 PDA 页面：[原则与最佳实践](/docs/solutions/hac/principles)

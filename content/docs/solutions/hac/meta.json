@@ -1,0 +1,15 @@
+{
+  "title": "HAC",
+  "icon": "TabletSmartphone",
+  "description": "活字格 Android 容器（HAC）的入门、安装、设备能力与 PDA 页面设计指南",
+  "pages": [
+    "index",
+    "introduction",
+    "---安装与调试---",
+    "...installation",
+    "---功能用法---",
+    "...features",
+    "---原则与最佳实践---",
+    "...principles"
+  ]
+}

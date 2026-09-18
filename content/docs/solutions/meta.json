@@ -3,5 +3,5 @@
   "description": "可直接应用到活字格项目中的完整工程方案",
   "icon": "Blocks",
   "root": true,
-  "pages": ["index", "rbac", "offline-form"]
+  "pages": ["index", "rbac", "hac", "offline-form"]
 }
