@@ -93,7 +93,7 @@ export const solutionModules: SiteSolutionModule[] = [
   },
   {
     id: "hac",
-    title: "HAC",
+    title: "活字格安卓容器",
     shortTitle: "HAC",
     docRoot: "solutions/hac",
     description:
