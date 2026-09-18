@@ -2,5 +2,5 @@
   "title": "应用场景",
   "icon": "Puzzle",
   "description": "HAC 的基础能力，以及它们能支撑的现场业务场景",
-  "pages": ["capabilities", "offline-form"]
+  "pages": ["base-scenarios", "offline-form"]
 }
