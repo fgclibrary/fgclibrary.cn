@@ -87,8 +87,8 @@ pnpm manual:export solutions/offline-form --help   # 查看全部选项
 
 | 位置 | 命令行 | 默认值 |
 | --- | --- | --- |
-| 主标题 | `--font-title` | 36pt |
-| 副标题 | `--font-subtitle` | 12pt |
+| 主标题 | `--font-title` | 48pt |
+| 副标题 | `--font-subtitle` | 16pt |
 | 信息区（版本/日期/备注） | `--font-meta` | 14px |
 
 尺寸可写 `28pt`、`40px` 这类带单位的值；只写数字时按 pt 处理（与 A4 印刷尺寸对应）。

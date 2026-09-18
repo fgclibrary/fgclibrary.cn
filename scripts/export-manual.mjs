@@ -48,8 +48,8 @@ const HELP = `
   --cover-bg <路径|网址>  封面背景图，铺满整页
   --cover-bg-opacity <0-1> 背景图不透明度，用于把背景调淡
   --cover-theme <light|dark|auto>  封面文字配色（默认 auto：按背景图亮度判断）
-  --font-title <尺寸>     主标题字号（默认 36pt）
-  --font-subtitle <尺寸>  副标题字号（默认 12pt）
+  --font-title <尺寸>     主标题字号（默认 48pt）
+  --font-subtitle <尺寸>  副标题字号（默认 16pt）
   --font-meta <尺寸>      信息区（版本/日期/备注）字号（默认 14px）
                           尺寸可写 36pt、48px，只写数字时按 pt
   --logo-top <位置>       logo 距页面顶部的距离（默认 5.4%）

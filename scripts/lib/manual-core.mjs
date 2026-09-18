@@ -635,14 +635,14 @@ const LAYOUT_CSS = `
 }
 
 .export-cover__title {
-  font-size: var(--cover-title-size, 36pt);
+  font-size: var(--cover-title-size, 48pt);
   font-weight: 800;
   line-height: 1.25;
   margin: 0;
   letter-spacing: -0.01em;
 }
 .export-cover__subtitle {
-  font-size: var(--cover-subtitle-size, 12pt);
+  font-size: var(--cover-subtitle-size, 16pt);
   line-height: 1.5;
   color: #52525b;
   margin: 0;
