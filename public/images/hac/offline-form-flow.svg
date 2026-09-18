@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="680" viewBox="0 0 1600 680" role="img" aria-labelledby="title desc">
+  <title id="title">HAC 离线填报业务流程</title>
+  <desc id="desc">活字格准备任务，在 HAC 设备上离线完成现场作业，网络恢复后回传到活字格完成业务归档。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#6b7280"/>
+    </marker>
+    <marker id="arrow-accent" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7c3aed"/>
+    </marker>
+    <style>
+      .sans { font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      .ink { fill: #171717; }
+      .muted { fill: #6b7280; }
+      .small { font-size: 22px; }
+      .body { font-size: 25px; }
+      .title { font-size: 42px; font-weight: 700; }
+      .card-title { font-size: 31px; font-weight: 700; }
+      .eyebrow { font-size: 18px; font-weight: 700; letter-spacing: 3px; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="680" fill="#fafafa"/>
+  <rect x="64" y="48" width="1472" height="584" rx="20" fill="#ffffff" stroke="#e5e7eb" stroke-width="2"/>
+
+  <text x="104" y="112" class="sans title ink">HAC 离线填报：一项现场任务的完整流转</text>
+  <text x="104" y="150" class="sans small muted">有网准备任务　→　断网完成作业　→　联网完成归档</text>
+
+  <rect x="588" y="184" width="424" height="324" rx="16" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="2" stroke-dasharray="8 8"/>
+  <rect x="706" y="170" width="188" height="36" rx="18" fill="#7c3aed"/>
+  <text x="800" y="195" class="sans small" fill="#ffffff" text-anchor="middle" font-weight="700">网络断开也能作业</text>
+
+  <path d="M500 350 H612" fill="none" stroke="#7c3aed" stroke-width="4" marker-end="url(#arrow-accent)"/>
+  <path d="M988 350 H1100" fill="none" stroke="#7c3aed" stroke-width="4" marker-end="url(#arrow-accent)"/>
+  <rect x="510" y="294" width="92" height="34" rx="4" fill="#ffffff"/>
+  <text x="556" y="318" class="sans" font-size="18" fill="#7c3aed" text-anchor="middle" font-weight="700">联网下发</text>
+  <rect x="994" y="284" width="100" height="54" rx="4" fill="#ffffff"/>
+  <text x="1044" y="306" class="sans" font-size="18" fill="#7c3aed" text-anchor="middle" font-weight="700">
+    <tspan x="1044" dy="0">网络恢复后</tspan>
+    <tspan x="1044" dy="24">回传</tspan>
+  </text>
+
+  <rect x="104" y="222" width="396" height="256" rx="14" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+  <rect x="104" y="222" width="396" height="12" rx="6" fill="#7c3aed"/>
+  <text x="136" y="278" class="sans eyebrow" fill="#7c3aed">任务准备区</text>
+  <text x="136" y="325" class="sans card-title ink">活字格</text>
+  <text x="136" y="370" class="sans body ink">定义表单与作业规则</text>
+  <text x="136" y="410" class="sans small muted">步骤、字段、照片、文件、签名</text>
+  <text x="136" y="445" class="sans small muted">校验后下发到 HAC</text>
+
+  <rect x="612" y="222" width="376" height="256" rx="14" fill="#ffffff" stroke="#8b5cf6" stroke-width="3"/>
+  <rect x="612" y="222" width="376" height="12" rx="6" fill="#7c3aed"/>
+  <text x="644" y="278" class="sans eyebrow" fill="#7c3aed">现场作业区</text>
+  <text x="644" y="325" class="sans card-title ink">HAC 设备</text>
+  <text x="644" y="370" class="sans body ink">离线填写、取证、签名</text>
+  <text x="644" y="410" class="sans small muted">记录与附件先保存在设备本地</text>
+  <text x="644" y="445" class="sans small muted">网络不稳定也能完成任务</text>
+
+  <rect x="1100" y="222" width="396" height="256" rx="14" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+  <rect x="1100" y="222" width="396" height="12" rx="6" fill="#7c3aed"/>
+  <text x="1132" y="278" class="sans eyebrow" fill="#7c3aed">企业归档区</text>
+  <text x="1132" y="325" class="sans card-title ink">活字格业务系统</text>
+  <text x="1132" y="370" class="sans body ink">解析、入库、关联附件</text>
+  <text x="1132" y="410" class="sans small muted">写入主表、子表和正式附件</text>
+  <text x="1132" y="445" class="sans small muted">确认入库后再清理设备记录</text>
+
+  <path d="M104 560 H1496" stroke="#e5e7eb" stroke-width="2"/>
+  <circle cx="216" cy="560" r="8" fill="#7c3aed"/>
+  <circle cx="800" cy="560" r="8" fill="#7c3aed"/>
+  <circle cx="1384" cy="560" r="8" fill="#7c3aed"/>
+  <text x="216" y="608" class="sans small muted" text-anchor="middle">准备好一份现场任务</text>
+  <text x="800" y="608" class="sans small muted" text-anchor="middle">现场工作先在设备完成</text>
+  <text x="1384" y="608" class="sans small muted" text-anchor="middle">业务数据回到企业系统</text>
+</svg>
